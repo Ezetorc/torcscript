@@ -1,7 +1,8 @@
-use crate::frontend::lexer::lexer::Lexer;
-use crate::frontend::literal::literal::Literal;
-use crate::frontend::token::token::Token;
 use crate::utilities::char_extension::CharExtension;
+use crate::{
+    abstract_syntax_tree::literal::Literal,
+    lexer::{lexer::Lexer, token::Token},
+};
 
 impl Lexer {
     pub fn handle_string(&mut self) {

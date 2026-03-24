@@ -1,6 +1,6 @@
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
-use crate::frontend::token::token::Token;
+use crate::lexer::token::Token;
 use crate::utilities::char_extension::CharExtension;
 
 pub struct Lexer {
@@ -51,7 +51,7 @@ impl Lexer {
         match string {
             "var" => Some(Token::Variable),
             "=" => Some(Token::Equal),
-            ";" => Some(Token::Semicolon),
+            ";" => Some(Token::EndOfLine),
             _ => None,
         }
     }

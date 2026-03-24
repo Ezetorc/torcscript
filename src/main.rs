@@ -1,11 +1,13 @@
 use crate::{
     errors::lang_error::LangError,
-    frontend::{lexer::lexer::Lexer, token::token::Token},
+    lexer::{lexer::Lexer, token::Token},
     utilities::read_file::read_file,
 };
 
+mod abstract_syntax_tree;
 mod errors;
-mod frontend;
+mod lexer;
+mod parser;
 mod utilities;
 
 fn main() {
