@@ -1,5 +1,6 @@
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
+use crate::lexer::keyword::Keyword;
 use crate::lexer::token::Token;
 use crate::utilities::char_extension::CharExtension;
 
@@ -44,14 +45,17 @@ impl Lexer {
             }
         }
 
+        lexer.tokens.push(Token::EndOfFile);
+
         Ok(lexer.tokens)
     }
 
     pub fn get_token_from(string: &str) -> Option<Token> {
         match string {
-            "var" => Some(Token::Variable),
-            "=" => Some(Token::Equal),
+            "print" | ">" => Some(Token::Keyword(Keyword::Print)),
+            "var" => Some(Token::Keyword(Keyword::Variable)),
             ";" => Some(Token::EndOfLine),
+            "=" => Some(Token::Equal),
             _ => None,
         }
     }

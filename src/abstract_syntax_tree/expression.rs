@@ -1,6 +1,11 @@
 use std::fmt::Display;
 
-use crate::abstract_syntax_tree::{literal::Literal, operator::Operator};
+use crate::{
+    abstract_syntax_tree::{literal::Literal, operator::Operator},
+    errors::lang_error::LangError,
+    errors::parser_error::ParserError,
+    lexer::token::Token,
+};
 
 #[derive(Debug)]
 pub enum Expression {
@@ -27,6 +32,21 @@ impl Display for Expression {
                 operator,
                 right,
             } => write!(formatter, "({} {} {})", operator, left, right),
+        }
+    }
+}
+
+impl TryFrom<Token> for Expression {
+    type Error = LangError;
+
+    fn try_from(value: Token) -> Result<Self, Self::Error> {
+        match value {
+            Token::Literal(literal) => Ok(Expression::Literal(literal)),
+            _ => {
+                return Err(LangError::Parser(ParserError::NotImplemented(
+                    "Printable token recognitizion not yet implemented".to_string(),
+                )));
+            }
         }
     }
 }

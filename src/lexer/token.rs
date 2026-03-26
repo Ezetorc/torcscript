@@ -1,11 +1,15 @@
-use crate::abstract_syntax_tree::{literal::Literal, operator::Operator};
+use crate::{
+    abstract_syntax_tree::{literal::Literal, operator::Operator},
+    lexer::keyword::Keyword,
+};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Identifier(String),
     Operator(Operator),
     Literal(Literal),
     EndOfLine,
-    Variable,
+    EndOfFile,
     Equal,
+    Keyword(Keyword),
 }
