@@ -1,5 +1,5 @@
 use crate::{
-    abstract_syntax_tree::statement::Statement,
+    abstract_syntax_tree::{expression::Expression, operator::Operator, statement::Statement},
     errors::{lang_error::LangError, parser_error::ParserError},
     lexer::{keyword::Keyword, token::Token},
 };
@@ -14,7 +14,7 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    pub fn evaluate(tokens: Vec<Token>) -> Result<Vec<Statement>, LangError> {
+    pub fn parse(tokens: Vec<Token>) -> Result<Vec<Statement>, LangError> {
         let mut abstract_syntax_tree: Vec<Statement> = Vec::new();
         let mut parser: Parser = Parser::new(tokens);
 
@@ -32,7 +32,6 @@ impl Parser {
                 Token::EndOfFile => break,
 
                 _ => {
-                    println!("token {:?}", token);
                     return Err(LangError::from(ParserError::NotImplemented(
                         "Token parsement not yet implemented".to_string(),
                     )));
@@ -46,6 +45,79 @@ impl Parser {
         }
 
         Ok(abstract_syntax_tree)
+    }
+
+    pub fn parse_expression(&mut self) -> Expression {
+        self.parse_term()
+    }
+
+    pub fn parse_term(&mut self) -> Expression {
+        let mut expression: Expression = self.parse_factor();
+
+        while let Token::Operator(operator) = self.get_current_token() {
+            if operator.is_additive() {
+                self.advance();
+                let right: Expression = self.parse_factor();
+
+                expression = Expression::Binary {
+                    left: Box::new(expression),
+                    operator,
+                    right: Box::new(right),
+                };
+            } else {
+                break;
+            }
+        }
+
+        expression
+    }
+
+    fn parse_factor(&mut self) -> Expression {
+        let mut expression: Expression = self.parse_unary();
+
+        while let Token::Operator(operator) = self.get_current_token() {
+            if operator.is_multiplicative() {
+                self.advance();
+                let right: Expression = self.parse_unary();
+
+                expression = Expression::Binary {
+                    left: Box::new(expression),
+                    operator,
+                    right: Box::new(right),
+                };
+            } else {
+                break;
+            }
+        }
+
+        expression
+    }
+
+    fn parse_unary(&mut self) -> Expression {
+        match self.get_current_token() {
+            Token::Operator(Operator::Substraction) => {
+                self.advance();
+
+                let expression: Expression = self.parse_unary();
+
+                Expression::Unary {
+                    operator: Operator::Substraction,
+                    expression: Box::new(expression),
+                }
+            }
+
+            _ => self.parse_primary(),
+        }
+    }
+
+    fn parse_primary(&mut self) -> Expression {
+        match self.advance() {
+            Token::Literal(literal) => Expression::Literal(literal),
+
+            Token::Identifier(name) => Expression::Identifier(name),
+
+            _ => panic!("Unexpected token"),
+        }
     }
 
     pub fn advance(&mut self) -> Token {

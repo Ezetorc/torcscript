@@ -1,4 +1,7 @@
-use crate::{abstract_syntax_tree::statement::Statement, errors::lang_error::LangError};
+use crate::{
+    abstract_syntax_tree::statement::Statement,
+    errors::{interpreter_error::InterpreterError, lang_error::LangError},
+};
 
 pub struct Interpreter {}
 
@@ -13,6 +16,11 @@ impl Interpreter {
         for statement in statements {
             match statement {
                 Statement::Print { expression } => interpreter.handle_print(expression)?,
+                _ => {
+                    return Err(LangError::Interpreter(InterpreterError::NotImplemented(
+                        "Statement execution not yet implemented".to_string(),
+                    )));
+                }
             }
         }
 

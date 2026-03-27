@@ -9,8 +9,7 @@ impl Parser {
     pub fn handle_print(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
-        let token: Token = self.advance();
-        let expression: Expression = Expression::try_from(token)?;
+        let expression: Expression = self.parse_expression();
 
         if self.get_current_token() == Token::EndOfLine {
             self.advance();

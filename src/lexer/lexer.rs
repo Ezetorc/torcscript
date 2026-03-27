@@ -1,3 +1,4 @@
+use crate::abstract_syntax_tree::operator::Operator;
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
 use crate::lexer::keyword::Keyword;
@@ -54,6 +55,10 @@ impl Lexer {
         match string {
             "print" | ">" => Some(Token::Keyword(Keyword::Print)),
             "var" => Some(Token::Keyword(Keyword::Variable)),
+            "+" => Some(Token::Operator(Operator::Addition)),
+            "-" => Some(Token::Operator(Operator::Substraction)),
+            "*" => Some(Token::Operator(Operator::Multiplication)),
+            "/" => Some(Token::Operator(Operator::Division)),
             ";" => Some(Token::EndOfLine),
             "=" => Some(Token::Equal),
             _ => None,

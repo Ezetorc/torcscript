@@ -8,6 +8,16 @@ pub enum Operator {
     Division,
 }
 
+impl Operator {
+    pub fn is_additive(&self) -> bool {
+        matches!(self, Operator::Addition | Operator::Substraction)
+    }
+
+    pub fn is_multiplicative(&self) -> bool {
+        matches!(self, Operator::Multiplication | Operator::Division)
+    }
+}
+
 impl Display for Operator {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
