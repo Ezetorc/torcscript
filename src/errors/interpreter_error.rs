@@ -3,6 +3,9 @@ use crate::errors::lang_error::LangError;
 #[derive(Debug)]
 pub enum InterpreterError {
     NotImplemented(String),
+    TypeMismatch(String),
+    NotFound(String),
+    DivisionByZero(String),
 }
 
 impl From<InterpreterError> for LangError {

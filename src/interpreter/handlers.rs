@@ -1,19 +1,30 @@
 use crate::{
     abstract_syntax_tree::expression::Expression,
-    errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    interpreter::interpreter::Interpreter,
+    errors::lang_error::LangError,
+    interpreter::{interpreter::Interpreter, value::Value},
 };
 
 impl Interpreter {
-    pub fn handle_print(&mut self, expression: Expression) -> Result<(), LangError> {
-        match expression {
-            Expression::Literal(literal) => println!("{}", literal.to_string()),
-            _ => {
-                return Err(LangError::Interpreter(InterpreterError::NotImplemented(
-                    "Expression print not yet implemented".to_string(),
-                )));
-            }
+    pub fn handle_print(&mut self, expression: &Expression) -> Result<(), LangError> {
+        let value: Value = self.evaluate_expression(expression)?;
+
+        match value {
+            Value::Number(number) => println!("{}", number),
+            Value::String(string) => println!("{}", string),
+            Value::Boolean(boolean) => println!("{}", boolean),
         }
+
+        Ok(())
+    }
+
+    pub fn handle_variable_declaration(
+        &mut self,
+        identifier: String,
+        expression: Expression,
+    ) -> Result<(), LangError> {
+        let value: Value = self.evaluate_expression(&expression)?;
+
+        self.environment.set_variable(identifier, value);
 
         Ok(())
     }

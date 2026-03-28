@@ -31,6 +31,8 @@ impl Parser {
 
                 Token::EndOfFile => break,
 
+                Token::Keyword(Keyword::Variable) => parser.handle_variable_declaration(),
+
                 _ => {
                     return Err(LangError::from(ParserError::NotImplemented(
                         "Token parsement not yet implemented".to_string(),
@@ -121,13 +123,30 @@ impl Parser {
     }
 
     pub fn advance(&mut self) -> Token {
-        let token = self.get_current_token();
+        let token: Token = self.get_current_token();
 
         if !self.is_at_end() {
             self.current += 1;
         }
 
         token
+    }
+
+    pub fn advance_expecting(&mut self, expected_token: Token) -> Result<Token, LangError> {
+        let token: Token = self.get_current_token();
+
+        if token != expected_token {
+            return Err(LangError::Parser(ParserError::InvalidSyntax(format!(
+                "Expected {:?}, found {:?}",
+                expected_token, token
+            ))));
+        }
+
+        if !self.is_at_end() {
+            self.current += 1;
+        }
+
+        Ok(token)
     }
 
     pub fn get_current_token(&self) -> Token {
