@@ -2,4 +2,5 @@
 pub enum Keyword {
     Variable,
     Print,
+    If,
 }

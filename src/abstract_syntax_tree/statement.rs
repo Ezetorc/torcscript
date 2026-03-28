@@ -16,4 +16,8 @@ pub enum Statement {
         identifier: String,
         expression: Expression,
     },
+    Conditional {
+        condition: Expression,
+        statements: Vec<Statement>,
+    },
 }

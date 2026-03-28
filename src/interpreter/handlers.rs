@@ -1,6 +1,6 @@
 use crate::{
-    abstract_syntax_tree::expression::Expression,
-    errors::lang_error::LangError,
+    abstract_syntax_tree::{expression::Expression, statement::Statement},
+    errors::{interpreter_error::InterpreterError, lang_error::LangError},
     interpreter::{interpreter::Interpreter, value::Value},
 };
 
@@ -18,6 +18,27 @@ impl Interpreter {
         Ok(())
     }
 
+    pub fn handle_conditional_statements(
+        &mut self,
+        condition: Expression,
+        statements: Vec<Statement>,
+    ) -> Result<(), LangError> {
+        let value: Value = self.evaluate_expression(&condition)?;
+
+        let condition_satisfied: bool = match value {
+            Value::None => return Ok(()),
+            Value::Boolean(boolean) => boolean,
+            Value::String(string) => !string.is_empty(),
+            Value::Number(number) => number > 0,
+        };
+
+        if condition_satisfied {
+            self.execute_block(statements)?;
+        }
+
+        Ok(())
+    }
+
     pub fn handle_variable_declaration(
         &mut self,
         identifier: String,
@@ -28,5 +49,25 @@ impl Interpreter {
         self.environment.set_variable(identifier, value);
 
         Ok(())
+    }
+
+    pub fn handle_variable_assignation(
+        &mut self,
+        identifier: String,
+        expression: Expression,
+    ) -> Result<(), LangError> {
+        let current_value: Option<&Value> = self.environment.get_variable(identifier.as_str());
+
+        if let Some(_) = current_value {
+            let new_value: Value = self.evaluate_expression(&expression)?;
+
+            self.environment.set_variable(identifier, new_value);
+
+            Ok(())
+        } else {
+            return Err(LangError::Interpreter(InterpreterError::NotFound(format!(
+                "Variable '{identifier}' not found"
+            ))));
+        }
     }
 }

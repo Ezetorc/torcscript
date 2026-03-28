@@ -18,23 +18,26 @@ impl Parser {
         Ok(Statement::Print { expression })
     }
 
+    pub fn handle_condition(&mut self) -> Result<Statement, LangError> {
+        self.advance();
+
+        let condition: Expression = self.parse_expression();
+        let statements: Vec<Statement> = self.parse_block()?;
+
+        Ok(Statement::Conditional { condition, statements })
+    }
+
     pub fn handle_variable_assignation(
         &mut self,
         identifier: String,
     ) -> Result<Statement, LangError> {
         self.advance();
 
-        let token: Token = self.advance();
+        self.advance_expecting(Token::Equal)?;
 
-        let expression: Expression = if token == Token::Equal {
-            self.parse_expression()
-        } else {
-            return Err(LangError::Parser(ParserError::InvalidSyntax(
-                "Expected variable assignation".to_string(),
-            )));
-        };
+        let expression: Expression = self.parse_expression();
 
-        Ok(Statement::VariableDeclaration {
+        Ok(Statement::VariableAssignation {
             identifier,
             expression,
         })

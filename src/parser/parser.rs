@@ -1,7 +1,7 @@
 use crate::{
     abstract_syntax_tree::{expression::Expression, operator::Operator, statement::Statement},
     errors::{lang_error::LangError, parser_error::ParserError},
-    lexer::{keyword::Keyword, token::Token},
+    lexer::{keyword::Keyword, side::Side, token::Token},
 };
 
 pub struct Parser {
@@ -15,35 +15,61 @@ impl Parser {
     }
 
     pub fn parse(tokens: Vec<Token>) -> Result<Vec<Statement>, LangError> {
-        let mut abstract_syntax_tree: Vec<Statement> = Vec::new();
         let mut parser: Parser = Parser::new(tokens);
+        parser.parse_program()
+    }
 
-        while !parser.is_at_end() {
-            let token: Token = parser.get_current_token();
+    pub fn parse_program(&mut self) -> Result<Vec<Statement>, LangError> {
+        let mut abstract_syntax_tree: Vec<Statement> = Vec::new();
 
-            let result: Result<Statement, LangError> = match token {
-                Token::Keyword(Keyword::Variable) => parser.handle_variable_declaration(),
-                Token::Keyword(Keyword::Print) => parser.handle_print(),
-                Token::Identifier(identifier) => parser.handle_variable_assignation(identifier),
-                Token::EndOfFile => break,
-                Token::EndOfLine => {
-                    parser.advance();
-                    continue;
-                }
-                _ => {
-                    return Err(LangError::from(ParserError::NotImplemented(
-                        "Token parsement not yet implemented".to_string(),
-                    )));
-                }
-            };
-
-            match result {
-                Ok(statement) => abstract_syntax_tree.push(statement),
-                Err(error) => return Err(error),
+        while !self.is_at_end() {
+            if self.get_current_token() == Token::EndOfLine {
+                self.advance();
+                continue;
+            } else if self.get_current_token() == Token::EndOfFile {
+                break;
             }
+
+            let statement: Statement = self.parse_statement()?;
+            abstract_syntax_tree.push(statement);
         }
 
         Ok(abstract_syntax_tree)
+    }
+
+    fn parse_statement(&mut self) -> Result<Statement, LangError> {
+        let token: Token = self.get_current_token();
+
+        match token {
+            Token::Identifier(identifier) => self.handle_variable_assignation(identifier),
+            Token::Keyword(Keyword::Variable) => self.handle_variable_declaration(),
+            Token::Keyword(Keyword::Print) => self.handle_print(),
+            Token::Keyword(Keyword::If) => self.handle_condition(),
+            Token::EndOfLine => Err(LangError::Parser(ParserError::InvalidSyntax(
+                "Unexpected end of line".to_string(),
+            ))),
+            Token::EndOfFile => Err(LangError::Parser(ParserError::InvalidSyntax(
+                "Unexpected end of file".to_string(),
+            ))),
+            _ => Err(LangError::from(ParserError::NotImplemented(
+                "Token parsement not yet implemented".to_string(),
+            ))),
+        }
+    }
+
+    pub fn parse_block(&mut self) -> Result<Vec<Statement>, LangError> {
+        self.advance_expecting(Token::Bracket(Side::Left))?;
+
+        let mut statements: Vec<Statement> = Vec::new();
+
+        while !self.is_at_end() && self.get_current_token() != Token::Bracket(Side::Right) {
+            let statement: Statement = self.parse_statement()?;
+            statements.push(statement);
+        }
+
+        self.advance_expecting(Token::Bracket(Side::Right))?;
+
+        Ok(statements)
     }
 
     pub fn parse_expression(&mut self) -> Expression {

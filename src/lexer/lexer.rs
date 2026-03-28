@@ -3,6 +3,7 @@ use crate::abstract_syntax_tree::operator::Operator;
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
 use crate::lexer::keyword::Keyword;
+use crate::lexer::side::Side;
 use crate::lexer::token::Token;
 use crate::utilities::char_extension::CharExtension;
 
@@ -54,15 +55,18 @@ impl Lexer {
 
     pub fn get_token_from(string: &str) -> Option<Token> {
         match string {
-            "print" | ">" => Some(Token::Keyword(Keyword::Print)),
-            "true" | "True" => Some(Token::Literal(Literal::Boolean(true))),
             "false" | "False" => Some(Token::Literal(Literal::Boolean(false))),
+            "true" | "True" => Some(Token::Literal(Literal::Boolean(true))),
             "none" | "None" => Some(Token::Literal(Literal::None)),
+            "*" => Some(Token::Operator(Operator::Multiplication)),
+            "print" | ">" => Some(Token::Keyword(Keyword::Print)),
+            "-" => Some(Token::Operator(Operator::Substraction)),
             "var" => Some(Token::Keyword(Keyword::Variable)),
             "+" => Some(Token::Operator(Operator::Addition)),
-            "-" => Some(Token::Operator(Operator::Substraction)),
-            "*" => Some(Token::Operator(Operator::Multiplication)),
             "/" => Some(Token::Operator(Operator::Division)),
+            "if" => Some(Token::Keyword(Keyword::If)),
+            "}" => Some(Token::Bracket(Side::Right)),
+            "{" => Some(Token::Bracket(Side::Left)),
             ";" => Some(Token::EndOfLine),
             "=" => Some(Token::Equal),
             _ => None,

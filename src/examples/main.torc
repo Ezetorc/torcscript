@@ -1,5 +1,5 @@
-var result;
+var result = true;
 
-result = true;
-
-> result;
+if result {
+    > result;
+}

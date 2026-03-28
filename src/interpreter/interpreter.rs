@@ -20,26 +20,44 @@ impl Interpreter {
     pub fn execute(statements: Vec<Statement>) -> Result<(), LangError> {
         let mut interpreter: Interpreter = Interpreter::new();
 
+        interpreter.execute_block(statements)
+    }
+
+    pub fn execute_block(&mut self, statements: Vec<Statement>) -> Result<(), LangError> {
         for statement in statements {
-            match statement {
-                Statement::Print { expression } => interpreter.handle_print(&expression)?,
-                Statement::Expression { expression } => {
-                    interpreter.evaluate_expression(&expression)?;
-                }
-                Statement::VariableDeclaration {
-                    identifier,
-                    expression,
-                } => interpreter.handle_variable_declaration(identifier, expression)?,
-
-                _ => {
-                    return Err(LangError::Interpreter(InterpreterError::NotImplemented(
-                        "Statement execution not yet implemented".to_string(),
-                    )));
-                }
-            }
+            self.execute_statement(statement)?;
         }
-
         Ok(())
+    }
+
+    fn execute_statement(&mut self, statement: Statement) -> Result<(), LangError> {
+        match statement {
+            Statement::Print { expression } => self.handle_print(&expression),
+
+            Statement::Expression { expression } => {
+                self.evaluate_expression(&expression)?;
+                Ok(())
+            }
+
+            Statement::VariableDeclaration {
+                identifier,
+                expression,
+            } => self.handle_variable_declaration(identifier, expression),
+
+            Statement::VariableAssignation {
+                identifier,
+                expression,
+            } => self.handle_variable_assignation(identifier, expression),
+
+            Statement::Conditional {
+                condition,
+                statements,
+            } => self.handle_conditional_statements(condition, statements),
+
+            _ => Err(LangError::Interpreter(InterpreterError::NotImplemented(
+                "Statement execution not yet implemented".to_string(),
+            ))),
+        }
     }
 
     pub fn evaluate_expression(&mut self, expression: &Expression) -> Result<Value, LangError> {
@@ -48,7 +66,7 @@ impl Interpreter {
                 Literal::Number(number) => Ok(Value::Number(*number)),
                 Literal::String(string) => Ok(Value::String(string.clone())),
                 Literal::Boolean(boolean) => Ok(Value::Boolean(*boolean)),
-                Literal::None => Ok(Value::None)
+                Literal::None => Ok(Value::None),
             },
 
             Expression::Binary {
