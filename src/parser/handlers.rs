@@ -1,5 +1,5 @@
 use crate::{
-    abstract_syntax_tree::{expression::Expression, statement::Statement},
+    abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
     errors::{lang_error::LangError, parser_error::ParserError},
     lexer::token::Token,
     parser::parser::Parser,
@@ -18,6 +18,28 @@ impl Parser {
         Ok(Statement::Print { expression })
     }
 
+    pub fn handle_variable_assignation(
+        &mut self,
+        identifier: String,
+    ) -> Result<Statement, LangError> {
+        self.advance();
+
+        let token: Token = self.advance();
+
+        let expression: Expression = if token == Token::Equal {
+            self.parse_expression()
+        } else {
+            return Err(LangError::Parser(ParserError::InvalidSyntax(
+                "Expected variable assignation".to_string(),
+            )));
+        };
+
+        Ok(Statement::VariableDeclaration {
+            identifier,
+            expression,
+        })
+    }
+
     pub fn handle_variable_declaration(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
@@ -25,11 +47,18 @@ impl Parser {
 
         match identifier_token {
             Token::Identifier(identifier) => {
-                self.advance_expecting(Token::Equal)?;
+                let token: Token = self.advance();
 
-                let expression: Expression = self.parse_expression();
+                let expression: Expression = if token == Token::Equal {
+                    self.parse_expression()
+                } else {
+                    Expression::Literal(Literal::None)
+                };
 
-                Ok(Statement::VariableDeclaration { identifier, expression })
+                Ok(Statement::VariableDeclaration {
+                    identifier,
+                    expression,
+                })
             }
             _ => {
                 return Err(LangError::Parser(ParserError::InvalidSyntax(

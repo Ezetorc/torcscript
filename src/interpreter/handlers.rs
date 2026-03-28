@@ -12,6 +12,7 @@ impl Interpreter {
             Value::Number(number) => println!("{}", number),
             Value::String(string) => println!("{}", string),
             Value::Boolean(boolean) => println!("{}", boolean),
+            Value::None => println!("None"),
         }
 
         Ok(())

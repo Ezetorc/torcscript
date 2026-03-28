@@ -22,17 +22,14 @@ impl Parser {
             let token: Token = parser.get_current_token();
 
             let result: Result<Statement, LangError> = match token {
+                Token::Keyword(Keyword::Variable) => parser.handle_variable_declaration(),
                 Token::Keyword(Keyword::Print) => parser.handle_print(),
-
+                Token::Identifier(identifier) => parser.handle_variable_assignation(identifier),
+                Token::EndOfFile => break,
                 Token::EndOfLine => {
                     parser.advance();
                     continue;
                 }
-
-                Token::EndOfFile => break,
-
-                Token::Keyword(Keyword::Variable) => parser.handle_variable_declaration(),
-
                 _ => {
                     return Err(LangError::from(ParserError::NotImplemented(
                         "Token parsement not yet implemented".to_string(),

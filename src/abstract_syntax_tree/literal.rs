@@ -5,6 +5,7 @@ pub enum Literal {
     String(String),
     Number(i64),
     Boolean(bool),
+    None,
 }
 
 impl fmt::Display for Literal {
@@ -13,6 +14,7 @@ impl fmt::Display for Literal {
             Literal::Boolean(boolean) => write!(formatter, "{}", boolean),
             Literal::String(string) => write!(formatter, "{}", string),
             Literal::Number(number) => write!(formatter, "{}", number),
+            Literal::None => write!(formatter, "None"),
         }
     }
 }

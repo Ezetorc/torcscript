@@ -12,4 +12,8 @@ pub enum Statement {
         identifier: String,
         expression: Expression,
     },
+    VariableAssignation {
+        identifier: String,
+        expression: Expression,
+    },
 }

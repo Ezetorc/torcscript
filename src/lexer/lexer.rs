@@ -1,3 +1,4 @@
+use crate::abstract_syntax_tree::literal::Literal;
 use crate::abstract_syntax_tree::operator::Operator;
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
@@ -54,6 +55,9 @@ impl Lexer {
     pub fn get_token_from(string: &str) -> Option<Token> {
         match string {
             "print" | ">" => Some(Token::Keyword(Keyword::Print)),
+            "true" | "True" => Some(Token::Literal(Literal::Boolean(true))),
+            "false" | "False" => Some(Token::Literal(Literal::Boolean(false))),
+            "none" | "None" => Some(Token::Literal(Literal::None)),
             "var" => Some(Token::Keyword(Keyword::Variable)),
             "+" => Some(Token::Operator(Operator::Addition)),
             "-" => Some(Token::Operator(Operator::Substraction)),

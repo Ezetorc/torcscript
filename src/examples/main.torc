@@ -1,3 +1,5 @@
-var result = 2 / 0;
+var result;
+
+result = true;
 
 > result;

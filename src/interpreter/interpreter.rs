@@ -46,7 +46,9 @@ impl Interpreter {
         match expression {
             Expression::Literal(literal) => match literal {
                 Literal::Number(number) => Ok(Value::Number(*number)),
-                _ => todo!(),
+                Literal::String(string) => Ok(Value::String(string.clone())),
+                Literal::Boolean(boolean) => Ok(Value::Boolean(*boolean)),
+                Literal::None => Ok(Value::None)
             },
 
             Expression::Binary {

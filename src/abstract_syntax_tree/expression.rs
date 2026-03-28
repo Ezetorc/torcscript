@@ -20,11 +20,7 @@ pub enum Expression {
 impl Display for Expression {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expression::Literal(literal) => match literal {
-                Literal::String(string) => write!(formatter, "{}", string),
-                Literal::Number(number) => write!(formatter, "{}", number),
-                Literal::Boolean(boolean) => write!(formatter, "{}", boolean),
-            },
+            Expression::Literal(literal) => write!(formatter, "{literal}"),
             Expression::Identifier(identifier) => write!(formatter, "{}", identifier),
             Expression::Binary {
                 left,
