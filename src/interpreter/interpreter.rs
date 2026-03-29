@@ -1,9 +1,7 @@
 use crate::{
-    abstract_syntax_tree::{
-        expression::Expression, literal::Literal, operator::Operator, statement::Statement,
-    },
+    abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    interpreter::{environment::Environment, value::Value},
+    interpreter::{environment::Environment, value::value::Value},
 };
 
 pub struct Interpreter {
@@ -74,7 +72,7 @@ impl Interpreter {
                 let left_value: Value = self.evaluate_expression(left)?;
                 let right_value: Value = self.evaluate_expression(right)?;
 
-                self.apply_operator(left_value, operator, right_value)
+                left_value.apply_binary_operator(operator, right_value)
             }
 
             Expression::Unary {
@@ -83,17 +81,7 @@ impl Interpreter {
             } => {
                 let value: Value = self.evaluate_expression(expression)?;
 
-                match value {
-                    Value::Number(number) => match operator {
-                        Operator::Substraction => Ok(Value::Number(-number)),
-                        Operator::Addition => Ok(Value::Number(number)),
-                        _ => Err(InterpreterError::TypeMismatch(
-                            "Expected addition or substraction operator".to_string(),
-                        )
-                        .into()),
-                    },
-                    _ => Err(InterpreterError::TypeMismatch("Expected number".to_string()).into()),
-                }
+                value.apply_unary_operator(operator)
             }
 
             Expression::Identifier(identifier) => {
@@ -106,63 +94,6 @@ impl Interpreter {
                         "Variable '{identifier}' not found"
                     ))
                     .into());
-                }
-            }
-        }
-    }
-
-    pub fn apply_operator(
-        &self,
-        left: Value,
-        operator: &Operator,
-        right: Value,
-    ) -> Result<Value, LangError> {
-        println!("{:?}, {:?}", left, right);
-        match (left, right) {
-            (Value::Number(a), Value::Number(b)) => self.apply_number_operators(a, operator, b),
-            (Value::String(a), Value::String(b)) => self.apply_string_operators(a, operator, b),
-
-            _ => Err(LangError::Interpreter(InterpreterError::TypeMismatch(
-                "Invalid operands".into(),
-            ))),
-        }
-    }
-
-    pub fn apply_string_operators(
-        &self,
-        left: String,
-        operator: &Operator,
-        right: String,
-    ) -> Result<Value, LangError> {
-        match operator {
-            Operator::Addition => Ok(Value::String(format!("{left}{right}"))),
-            Operator::Equality => Ok(Value::Boolean(left == right)),
-            _ => Err(InterpreterError::InvalidOperator(format!(
-                "Cannot use operator '{operator}' within two strings"
-            ))
-            .into()),
-        }
-    }
-
-    pub fn apply_number_operators(
-        &self,
-        left: i64,
-        operator: &Operator,
-        right: i64,
-    ) -> Result<Value, LangError> {
-        match operator {
-            Operator::Addition => Ok(Value::Number(left + right)),
-            Operator::Substraction => Ok(Value::Number(left - right)),
-            Operator::Multiplication => Ok(Value::Number(left * right)),
-            Operator::Equality => Ok(Value::Boolean(left == right)),
-            Operator::Division => {
-                if right == 0 {
-                    return Err(InterpreterError::DivisionByZero(format!(
-                        "Attempted to divide {left} by 0"
-                    ))
-                    .into());
-                } else {
-                    Ok(Value::Number(left / right))
                 }
             }
         }

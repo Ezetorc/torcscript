@@ -7,6 +7,7 @@ pub enum Operator {
     Multiplication,
     Division,
     Equality,
+    Negation,
 }
 
 impl Operator {
@@ -27,6 +28,7 @@ impl Display for Operator {
             Operator::Addition => write!(formatter, "+"),
             Operator::Division => write!(formatter, "/"),
             Operator::Equality => write!(formatter, "is"),
+            Operator::Negation => write!(formatter, "!"),
         }
     }
 }

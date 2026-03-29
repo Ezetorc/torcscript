@@ -1,7 +1,7 @@
 use crate::{
     abstract_syntax_tree::{expression::Expression, statement::Statement},
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    interpreter::{interpreter::Interpreter, value::Value},
+    interpreter::{interpreter::Interpreter, value::value::Value},
 };
 
 impl Interpreter {

@@ -1,5 +1,4 @@
 var state = "hola";
+var dos = "como estas";
 
-if state is "hola" {
-    > "1";
-}
+# state + " " + dos;

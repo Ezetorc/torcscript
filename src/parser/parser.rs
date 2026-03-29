@@ -130,6 +130,16 @@ impl Parser {
                     expression: Box::new(expression),
                 })
             }
+            Token::Operator(Operator::Negation) => {
+                self.advance();
+
+                let expression: Expression = self.parse_unary()?;
+
+                Ok(Expression::Unary {
+                    operator: Operator::Negation,
+                    expression: Box::new(expression),
+                })
+            }
 
             _ => self.parse_primary(),
         }
