@@ -5,6 +5,7 @@ pub enum InterpreterError {
     TypeMismatch(String),
     NotFound(String),
     DivisionByZero(String),
+    InvalidOperator(String),
 }
 
 impl From<InterpreterError> for LangError {

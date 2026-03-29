@@ -117,26 +117,54 @@ impl Interpreter {
         operator: &Operator,
         right: Value,
     ) -> Result<Value, LangError> {
+        println!("{:?}, {:?}", left, right);
         match (left, right) {
-            (Value::Number(a), Value::Number(b)) => match operator {
-                Operator::Addition => Ok(Value::Number(a + b)),
-                Operator::Substraction => Ok(Value::Number(a - b)),
-                Operator::Multiplication => Ok(Value::Number(a * b)),
-                Operator::Division => {
-                    if b == 0 {
-                        return Err(InterpreterError::DivisionByZero(format!(
-                            "Attempted to divide {a} by 0"
-                        ))
-                        .into());
-                    } else {
-                        Ok(Value::Number(a / b))
-                    }
-                }
-            },
+            (Value::Number(a), Value::Number(b)) => self.apply_number_operators(a, operator, b),
+            (Value::String(a), Value::String(b)) => self.apply_string_operators(a, operator, b),
 
             _ => Err(LangError::Interpreter(InterpreterError::TypeMismatch(
                 "Invalid operands".into(),
             ))),
+        }
+    }
+
+    pub fn apply_string_operators(
+        &self,
+        left: String,
+        operator: &Operator,
+        right: String,
+    ) -> Result<Value, LangError> {
+        match operator {
+            Operator::Addition => Ok(Value::String(format!("{left}{right}"))),
+            Operator::Equality => Ok(Value::Boolean(left == right)),
+            _ => Err(InterpreterError::InvalidOperator(format!(
+                "Cannot use operator '{operator}' within two strings"
+            ))
+            .into()),
+        }
+    }
+
+    pub fn apply_number_operators(
+        &self,
+        left: i64,
+        operator: &Operator,
+        right: i64,
+    ) -> Result<Value, LangError> {
+        match operator {
+            Operator::Addition => Ok(Value::Number(left + right)),
+            Operator::Substraction => Ok(Value::Number(left - right)),
+            Operator::Multiplication => Ok(Value::Number(left * right)),
+            Operator::Equality => Ok(Value::Boolean(left == right)),
+            Operator::Division => {
+                if right == 0 {
+                    return Err(InterpreterError::DivisionByZero(format!(
+                        "Attempted to divide {left} by 0"
+                    ))
+                    .into());
+                } else {
+                    Ok(Value::Number(left / right))
+                }
+            }
         }
     }
 }

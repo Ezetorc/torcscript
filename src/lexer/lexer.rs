@@ -66,6 +66,7 @@ impl Lexer {
             "/" => Some(Token::Operator(Operator::Division)),
             "else" => Some(Token::Keyword(Keyword::Else)),
             "if" => Some(Token::Keyword(Keyword::If)),
+            "is" => Some(Token::Operator(Operator::Equality)),
             "}" => Some(Token::Bracket(Side::Right)),
             "{" => Some(Token::Bracket(Side::Left)),
             ";" => Some(Token::EndOfLine),
