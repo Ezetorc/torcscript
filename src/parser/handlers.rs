@@ -1,7 +1,7 @@
 use crate::{
     abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
     errors::{lang_error::LangError, parser_error::ParserError},
-    lexer::token::Token,
+    lexer::{keyword::Keyword, token::Token},
     parser::parser::Parser,
 };
 
@@ -9,7 +9,7 @@ impl Parser {
     pub fn handle_print(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
-        let expression: Expression = self.parse_expression();
+        let expression: Expression = self.parse_expression()?;
 
         if self.get_current_token() == Token::EndOfLine {
             self.advance();
@@ -21,10 +21,36 @@ impl Parser {
     pub fn handle_condition(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
-        let condition: Expression = self.parse_expression();
+        let condition: Expression = self.parse_expression()?;
         let statements: Vec<Statement> = self.parse_block()?;
 
-        Ok(Statement::Conditional { condition, statements })
+        if self.get_current_token() == Token::Keyword(Keyword::Else) {
+            self.advance();
+
+            if self.get_current_token() == Token::Keyword(Keyword::If) {
+                let else_if_statement: Statement = self.handle_condition()?;
+
+                return Ok(Statement::Conditional {
+                    condition,
+                    statements,
+                    else_statements: Some(vec![else_if_statement]),
+                });
+            }
+
+            let else_statements: Vec<Statement> = self.parse_block()?;
+
+            return Ok(Statement::Conditional {
+                condition,
+                statements,
+                else_statements: Some(else_statements),
+            });
+        }
+
+        Ok(Statement::Conditional {
+            condition,
+            statements,
+            else_statements: None,
+        })
     }
 
     pub fn handle_variable_assignation(
@@ -35,7 +61,7 @@ impl Parser {
 
         self.advance_expecting(Token::Equal)?;
 
-        let expression: Expression = self.parse_expression();
+        let expression: Expression = self.parse_expression()?;
 
         Ok(Statement::VariableAssignation {
             identifier,
@@ -53,7 +79,7 @@ impl Parser {
                 let token: Token = self.advance();
 
                 let expression: Expression = if token == Token::Equal {
-                    self.parse_expression()
+                    self.parse_expression()?
                 } else {
                     Expression::Literal(Literal::None)
                 };
@@ -63,11 +89,11 @@ impl Parser {
                     expression,
                 })
             }
-            _ => {
-                return Err(LangError::Parser(ParserError::InvalidSyntax(
-                    "Expected variable identifier".to_string(),
-                )));
-            }
+            _ => Err(ParserError::InvalidSyntax(format!(
+                "Expected variable identifier, found {:?}",
+                identifier_token
+            ))
+            .into()),
         }
     }
 }

@@ -4,6 +4,7 @@ use crate::errors::lang_error::LangError;
 pub enum ParserError {
     NotImplemented(String),
     InvalidSyntax(String),
+    NotFound(String),
 }
 
 impl From<ParserError> for LangError {

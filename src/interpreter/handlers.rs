@@ -22,6 +22,7 @@ impl Interpreter {
         &mut self,
         condition: Expression,
         statements: Vec<Statement>,
+        else_statements: Option<Vec<Statement>>,
     ) -> Result<(), LangError> {
         let value: Value = self.evaluate_expression(&condition)?;
 
@@ -34,6 +35,8 @@ impl Interpreter {
 
         if condition_satisfied {
             self.execute_block(statements)?;
+        } else if let Some(else_statements) = else_statements {
+            self.execute_block(else_statements)?;
         }
 
         Ok(())
@@ -65,9 +68,9 @@ impl Interpreter {
 
             Ok(())
         } else {
-            return Err(LangError::Interpreter(InterpreterError::NotFound(format!(
-                "Variable '{identifier}' not found"
-            ))));
+            return Err(
+                InterpreterError::NotFound(format!("Variable '{identifier}' not found")).into(),
+            );
         }
     }
 }

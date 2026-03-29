@@ -1,5 +1,5 @@
-var result = true;
+var state = "hola";
 
-if result {
-    > result;
+if state {
+    > "1";
 }

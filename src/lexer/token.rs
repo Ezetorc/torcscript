@@ -1,3 +1,5 @@
+use std::fmt::{Display, Result};
+
 use crate::{
     abstract_syntax_tree::{literal::Literal, operator::Operator},
     lexer::{keyword::Keyword, side::Side},
@@ -13,4 +15,10 @@ pub enum Token {
     EndOfLine,
     EndOfFile,
     Equal,
+}
+
+impl Display for Token {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result {
+        write!(formatter, "{:?}", self)
+    }
 }

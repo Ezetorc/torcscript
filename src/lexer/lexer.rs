@@ -15,18 +15,18 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    fn new(source: &Vec<char>) -> Self {
+    fn new(source: Vec<char>) -> Self {
         Self {
             tokens: Vec::new(),
             current: 0,
             start: 0,
-            source: source.clone(),
+            source,
         }
     }
 
     pub fn tokenize(source: String) -> Result<Vec<Token>, LangError> {
         let source: Vec<char> = source.chars().collect();
-        let mut lexer: Lexer = Lexer::new(&source);
+        let mut lexer: Lexer = Lexer::new(source);
 
         while !lexer.is_at_end() {
             let char: char = lexer.get_current_char();
@@ -42,9 +42,9 @@ impl Lexer {
             } else if char.is_skippable() {
                 lexer.advance();
             } else {
-                return Err(LangError::Lexer(LexerError::InvalidToken(
-                    "Token not recognized".to_string(),
-                )));
+                return Err(
+                    LexerError::InvalidToken(format!("Token {char} not recognized")).into(),
+                );
             }
         }
 
@@ -64,6 +64,7 @@ impl Lexer {
             "var" => Some(Token::Keyword(Keyword::Variable)),
             "+" => Some(Token::Operator(Operator::Addition)),
             "/" => Some(Token::Operator(Operator::Division)),
+            "else" => Some(Token::Keyword(Keyword::Else)),
             "if" => Some(Token::Keyword(Keyword::If)),
             "}" => Some(Token::Bracket(Side::Right)),
             "{" => Some(Token::Bracket(Side::Left)),

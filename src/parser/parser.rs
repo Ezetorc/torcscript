@@ -72,17 +72,17 @@ impl Parser {
         Ok(statements)
     }
 
-    pub fn parse_expression(&mut self) -> Expression {
+    pub fn parse_expression(&mut self) -> Result<Expression, LangError> {
         self.parse_term()
     }
 
-    pub fn parse_term(&mut self) -> Expression {
-        let mut expression: Expression = self.parse_factor();
+    pub fn parse_term(&mut self) -> Result<Expression, LangError> {
+        let mut expression: Expression = self.parse_factor()?;
 
         while let Token::Operator(operator) = self.get_current_token() {
             if operator.is_additive() {
                 self.advance();
-                let right: Expression = self.parse_factor();
+                let right: Expression = self.parse_factor()?;
 
                 expression = Expression::Binary {
                     left: Box::new(expression),
@@ -94,16 +94,16 @@ impl Parser {
             }
         }
 
-        expression
+        Ok(expression)
     }
 
-    fn parse_factor(&mut self) -> Expression {
-        let mut expression: Expression = self.parse_unary();
+    fn parse_factor(&mut self) -> Result<Expression, LangError> {
+        let mut expression: Expression = self.parse_unary()?;
 
         while let Token::Operator(operator) = self.get_current_token() {
             if operator.is_multiplicative() {
                 self.advance();
-                let right: Expression = self.parse_unary();
+                let right: Expression = self.parse_unary()?;
 
                 expression = Expression::Binary {
                     left: Box::new(expression),
@@ -115,33 +115,33 @@ impl Parser {
             }
         }
 
-        expression
+        Ok(expression)
     }
 
-    fn parse_unary(&mut self) -> Expression {
+    fn parse_unary(&mut self) -> Result<Expression, LangError> {
         match self.get_current_token() {
             Token::Operator(Operator::Substraction) => {
                 self.advance();
 
-                let expression: Expression = self.parse_unary();
+                let expression: Expression = self.parse_unary()?;
 
-                Expression::Unary {
+                Ok(Expression::Unary {
                     operator: Operator::Substraction,
                     expression: Box::new(expression),
-                }
+                })
             }
 
             _ => self.parse_primary(),
         }
     }
 
-    fn parse_primary(&mut self) -> Expression {
-        match self.advance() {
-            Token::Literal(literal) => Expression::Literal(literal),
+    fn parse_primary(&mut self) -> Result<Expression, LangError> {
+        let token: Token = self.advance();
 
-            Token::Identifier(name) => Expression::Identifier(name),
-
-            _ => panic!("Unexpected token"),
+        match token {
+            Token::Literal(literal) => Ok(Expression::Literal(literal)),
+            Token::Identifier(name) => Ok(Expression::Identifier(name)),
+            _ => Err(ParserError::NotFound(format!("Unexpected token {token}")).into()),
         }
     }
 
@@ -159,10 +159,10 @@ impl Parser {
         let token: Token = self.get_current_token();
 
         if token != expected_token {
-            return Err(LangError::Parser(ParserError::InvalidSyntax(format!(
-                "Expected {:?}, found {:?}",
-                expected_token, token
-            ))));
+            return Err(ParserError::InvalidSyntax(format!(
+                "Expected {expected_token}, found {token}",
+            ))
+            .into());
         }
 
         if !self.is_at_end() {

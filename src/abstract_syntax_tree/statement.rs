@@ -19,5 +19,6 @@ pub enum Statement {
     Conditional {
         condition: Expression,
         statements: Vec<Statement>,
+        else_statements: Option<Vec<Statement>>,
     },
 }

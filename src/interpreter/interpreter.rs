@@ -52,11 +52,8 @@ impl Interpreter {
             Statement::Conditional {
                 condition,
                 statements,
-            } => self.handle_conditional_statements(condition, statements),
-
-            _ => Err(LangError::Interpreter(InterpreterError::NotImplemented(
-                "Statement execution not yet implemented".to_string(),
-            ))),
+                else_statements,
+            } => self.handle_conditional_statements(condition, statements, else_statements),
         }
     }
 
@@ -90,17 +87,12 @@ impl Interpreter {
                     Value::Number(number) => match operator {
                         Operator::Substraction => Ok(Value::Number(-number)),
                         Operator::Addition => Ok(Value::Number(number)),
-                        _ => {
-                            return Err(LangError::Interpreter(InterpreterError::TypeMismatch(
-                                "Expected addition or substraction operator".to_string(),
-                            )));
-                        }
+                        _ => Err(InterpreterError::TypeMismatch(
+                            "Expected addition or substraction operator".to_string(),
+                        )
+                        .into()),
                     },
-                    _ => {
-                        return Err(LangError::Interpreter(InterpreterError::TypeMismatch(
-                            "Expected number".into(),
-                        )));
-                    }
+                    _ => Err(InterpreterError::TypeMismatch("Expected number".to_string()).into()),
                 }
             }
 
@@ -110,9 +102,10 @@ impl Interpreter {
                 if let Some(value) = value {
                     return Ok(value.clone());
                 } else {
-                    return Err(LangError::Interpreter(InterpreterError::NotFound(format!(
+                    return Err(InterpreterError::NotFound(format!(
                         "Variable '{identifier}' not found"
-                    ))));
+                    ))
+                    .into());
                 }
             }
         }
@@ -131,9 +124,10 @@ impl Interpreter {
                 Operator::Multiplication => Ok(Value::Number(a * b)),
                 Operator::Division => {
                     if b == 0 {
-                        return Err(LangError::Interpreter(InterpreterError::DivisionByZero(
-                            "Attempted to divide by zero".to_string(),
-                        )));
+                        return Err(InterpreterError::DivisionByZero(format!(
+                            "Attempted to divide {a} by 0"
+                        ))
+                        .into());
                     } else {
                         Ok(Value::Number(a / b))
                     }
