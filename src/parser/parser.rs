@@ -30,24 +30,31 @@ impl Parser {
                 break;
             }
 
-            let statement: Statement = self.parse_statement()?;
-            abstract_syntax_tree.push(statement);
+            let statement: Option<Statement> = self.parse_statement()?;
+
+            if let Some(statement) = statement {
+                abstract_syntax_tree.push(statement);
+            }
         }
 
         Ok(abstract_syntax_tree)
     }
 
-    fn parse_statement(&mut self) -> Result<Statement, LangError> {
+    fn parse_statement(&mut self) -> Result<Option<Statement>, LangError> {
         let token: Token = self.get_current_token();
 
         match token {
-            Token::Identifier(identifier) => self.handle_variable_assignation(identifier),
-            Token::Keyword(Keyword::Variable) => self.handle_variable_declaration(),
-            Token::Keyword(Keyword::Print) => self.handle_print(),
-            Token::Keyword(Keyword::If) => self.handle_condition(),
-            Token::EndOfLine => Err(LangError::Parser(ParserError::InvalidSyntax(
-                "Unexpected end of line".to_string(),
-            ))),
+            Token::Identifier(identifier) => {
+                Ok(Some(self.handle_variable_assignation(identifier)?))
+            }
+            Token::Keyword(Keyword::Variable) => Ok(Some(self.handle_variable_declaration()?)),
+            Token::Keyword(Keyword::Print) => Ok(Some(self.handle_print()?)),
+            Token::Keyword(Keyword::If) => Ok(Some(self.handle_condition()?)),
+            Token::Commentary => {
+                self.handle_commentary();
+                Ok(None)
+            }
+            Token::EndOfLine => Ok(None), // opcional: ignorar líneas vacías
             Token::EndOfFile => Err(LangError::Parser(ParserError::InvalidSyntax(
                 "Unexpected end of file".to_string(),
             ))),
@@ -63,8 +70,11 @@ impl Parser {
         let mut statements: Vec<Statement> = Vec::new();
 
         while !self.is_at_end() && self.get_current_token() != Token::Bracket(Side::Right) {
-            let statement: Statement = self.parse_statement()?;
-            statements.push(statement);
+            let statement: Option<Statement> = self.parse_statement()?;
+
+            if let Some(statement) = statement {
+                statements.push(statement);
+            }
         }
 
         self.advance_expecting(Token::Bracket(Side::Right))?;

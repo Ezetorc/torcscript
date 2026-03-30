@@ -69,6 +69,16 @@ impl Parser {
         })
     }
 
+    pub fn handle_commentary(&mut self) {
+        self.advance();
+
+        while !self.is_at_end() && self.get_current_token() != Token::EndOfLine {
+            self.advance();
+        }
+
+        self.advance();
+    }
+
     pub fn handle_variable_declaration(&mut self) -> Result<Statement, LangError> {
         self.advance();
 

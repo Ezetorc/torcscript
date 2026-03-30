@@ -12,6 +12,7 @@ pub enum Token {
     Literal(Literal),
     Keyword(Keyword),
     Bracket(Side),
+    Commentary,
     EndOfLine,
     EndOfFile,
     Equal,
