@@ -38,7 +38,7 @@ impl Value {
             Operator::And => Ok(Value::Boolean(left && right)),
             Operator::Or => Ok(Value::Boolean(left || right)),
             _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator {operator}")).into(),
+                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
             ),
         }
     }
@@ -53,7 +53,7 @@ impl Value {
             Operator::Equality => Ok(Value::Boolean(left == right)),
             Operator::Difference => Ok(Value::Boolean(left != right)),
             _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator {operator}")).into(),
+                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
             ),
         }
     }
@@ -84,7 +84,7 @@ impl Value {
                 }
             }
             _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator {operator}")).into(),
+                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
             ),
         }
     }

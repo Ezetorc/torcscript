@@ -5,9 +5,6 @@ pub enum Statement {
     Print {
         expression: Expression,
     },
-    Expression {
-        expression: Expression,
-    },
     VariableDeclaration {
         identifier: String,
         expression: Expression,

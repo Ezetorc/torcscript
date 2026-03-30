@@ -1,5 +1,7 @@
 use std::fmt;
 
+use colored::Colorize;
+
 use crate::errors::{
     interpreter_error::InterpreterError, lexer_error::LexerError, parser_error::ParserError,
 };
@@ -14,9 +16,15 @@ pub enum LangError {
 impl fmt::Display for LangError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LangError::Lexer(error) => write!(formatter, "Lexer error: {:?}", error),
-            LangError::Parser(error) => write!(formatter, "Parser error: {:?}", error),
-            LangError::Interpreter(error) => write!(formatter, "Interpreter error: {:?}", error),
+            LangError::Lexer(error) => {
+                write!(formatter, "{} {error}", "[Lexer Error]".red().bold())
+            }
+            LangError::Parser(error) => {
+                write!(formatter, "{} {error}", "[Parser Error]".red().bold())
+            }
+            LangError::Interpreter(error) => {
+                write!(formatter, "{} {error}", "[Interpreter Error]".red().bold())
+            }
         }
     }
 }

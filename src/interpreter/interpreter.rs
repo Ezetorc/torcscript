@@ -32,11 +32,6 @@ impl Interpreter {
         match statement {
             Statement::Print { expression } => self.handle_print(&expression),
 
-            Statement::Expression { expression } => {
-                self.evaluate_expression(&expression)?;
-                Ok(())
-            }
-
             Statement::VariableDeclaration {
                 identifier,
                 expression,

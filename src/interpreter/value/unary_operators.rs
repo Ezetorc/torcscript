@@ -20,7 +20,7 @@ impl Value {
         match operator {
             Operator::Negation => Ok(Value::Boolean(!boolean)),
             _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator {operator}")).into(),
+                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
             ),
         }
     }
@@ -33,7 +33,7 @@ impl Value {
             Operator::Substraction => Ok(Value::Number(-number)),
             Operator::Addition => Ok(Value::Number(number)),
             _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator {operator}")).into(),
+                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
             ),
         }
     }
