@@ -49,13 +49,18 @@ impl Lexer {
         self.add_token(Token::Literal(Literal::Number(number)));
     }
 
-    pub fn handle_symbol(&mut self, char: char) {
-        let token: Option<Token> = Lexer::get_token_from(&char.to_string());
+    pub fn handle_symbol(&mut self) {
+        self.start = self.current;
+
+        while !self.is_at_end() && self.get_current_char().is_symbol() {
+            self.advance();
+        }
+
+        let value: String = self.source[self.start..self.current].iter().collect();
+        let token: Option<Token> = Lexer::get_token_from(value.as_str());
 
         if let Some(token) = token {
             self.add_token(token);
         }
-
-        self.advance();
     }
 }

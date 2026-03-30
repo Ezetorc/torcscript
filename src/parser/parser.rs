@@ -80,7 +80,7 @@ impl Parser {
         let mut expression: Expression = self.parse_factor()?;
 
         while let Token::Operator(operator) = self.get_current_token() {
-            if operator.is_additive() || operator == Operator::Equality {
+            if operator.is_binary() {
                 self.advance();
                 let right: Expression = self.parse_factor()?;
 

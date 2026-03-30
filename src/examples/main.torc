@@ -1,4 +1,4 @@
-var state = "hola";
-var dos = "como estas";
-
-# state + " " + dos;
+# 2 > 1;
+# 2 >= 2;
+# 1 < 2;
+# 1 <= 1;

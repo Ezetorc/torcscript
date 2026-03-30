@@ -33,6 +33,7 @@ impl Value {
         match operator {
             Operator::Addition => Ok(Value::String(format!("{left}{right}"))),
             Operator::Equality => Ok(Value::Boolean(left == right)),
+            Operator::Difference => Ok(Value::Boolean(left != right)),
             _ => Err(
                 InterpreterError::InvalidOperator(format!("Invalid operator {operator}")).into(),
             ),
@@ -49,6 +50,11 @@ impl Value {
             Operator::Substraction => Ok(Value::Number(left - right)),
             Operator::Multiplication => Ok(Value::Number(left * right)),
             Operator::Equality => Ok(Value::Boolean(left == right)),
+            Operator::Difference => Ok(Value::Boolean(left != right)),
+            Operator::Greater => Ok(Value::Boolean(left > right)),
+            Operator::GreaterOrEqual => Ok(Value::Boolean(left >= right)),
+            Operator::Less => Ok(Value::Boolean(left < right)),
+            Operator::LessOrEqual => Ok(Value::Boolean(left <= right)),
             Operator::Division => {
                 if right == 0 {
                     return Err(InterpreterError::DivisionByZero(format!(

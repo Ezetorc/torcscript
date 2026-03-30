@@ -38,7 +38,7 @@ impl Lexer {
             } else if char.is_number() {
                 lexer.handle_number();
             } else if char.is_symbol() {
-                lexer.handle_symbol(char);
+                lexer.handle_symbol();
             } else if char.is_skippable() {
                 lexer.advance();
             } else {
@@ -67,7 +67,12 @@ impl Lexer {
             "else" => Some(Token::Keyword(Keyword::Else)),
             "if" => Some(Token::Keyword(Keyword::If)),
             "is" => Some(Token::Operator(Operator::Equality)),
-            "!" => Some(Token::Operator(Operator::Negation)),
+            "isnt" => Some(Token::Operator(Operator::Difference)),
+            "not" => Some(Token::Operator(Operator::Negation)),
+            "<" => Some(Token::Operator(Operator::Less)),
+            "<=" => Some(Token::Operator(Operator::LessOrEqual)),
+            ">" => Some(Token::Operator(Operator::Greater)),
+            ">=" => Some(Token::Operator(Operator::GreaterOrEqual)),
             "}" => Some(Token::Bracket(Side::Right)),
             "{" => Some(Token::Bracket(Side::Left)),
             ";" => Some(Token::EndOfLine),
