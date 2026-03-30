@@ -1,3 +1,3 @@
-#state hola = "como estas";
+state array = List(1, 2, 3);
 
-print hola;
+print array;

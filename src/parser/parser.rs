@@ -54,10 +54,10 @@ impl Parser {
                 self.handle_commentary();
                 Ok(None)
             }
-            Token::EndOfLine => Ok(None), // opcional: ignorar líneas vacías
             Token::EndOfFile => Err(LangError::Parser(ParserError::InvalidSyntax(
                 "Unexpected end of file".to_string(),
             ))),
+            Token::EndOfLine => Ok(None),
             _ => Err(LangError::from(ParserError::NotImplemented(
                 "Token parsement not yet implemented".to_string(),
             ))),
@@ -161,7 +161,8 @@ impl Parser {
         match token {
             Token::Literal(literal) => Ok(Expression::Literal(literal)),
             Token::Identifier(name) => Ok(Expression::Identifier(name)),
-            _ => Err(ParserError::NotFound(format!("Unexpected token {token}")).into()),
+            Token::List => Ok(self.handle_list()?),
+            _ => Err(ParserError::NotFound(format!("Unexpected token '{token}'")).into()),
         }
     }
 

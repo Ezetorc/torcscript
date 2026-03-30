@@ -1,3 +1,5 @@
+use crate::abstract_syntax_tree::operator::Operator;
+use crate::lexer::side::Side;
 use crate::utilities::char_extension::CharExtension;
 use crate::{
     abstract_syntax_tree::literal::Literal,
@@ -50,17 +52,54 @@ impl Lexer {
     }
 
     pub fn handle_symbol(&mut self) {
-        self.start = self.current;
+        let current_char: char = self.get_current_char();
+        let next_char: Option<char> = self.get_next_char();
 
-        while !self.is_at_end() && self.get_current_char().is_symbol() {
-            self.advance();
-        }
+        let token: Token = match (current_char, next_char) {
+            ('=', Some('=')) => {
+                self.advance();
+                self.advance();
+                Token::Operator(Operator::Equality)
+            }
+            ('!', Some('=')) => {
+                self.advance();
+                self.advance();
+                Token::Operator(Operator::Difference)
+            }
+            ('>', Some('=')) => {
+                self.advance();
+                self.advance();
+                Token::Operator(Operator::GreaterOrEqual)
+            }
+            ('<', Some('=')) => {
+                self.advance();
+                self.advance();
+                Token::Operator(Operator::LessOrEqual)
+            }
 
-        let value: String = self.source[self.start..self.current].iter().collect();
-        let token: Option<Token> = Lexer::get_token_from(value.as_str());
+            _ => {
+                self.advance();
 
-        if let Some(token) = token {
-            self.add_token(token);
-        }
+                match current_char {
+                    ')' => Token::Parenthesis(Side::Right),
+                    '(' => Token::Parenthesis(Side::Left),
+                    '}' => Token::Bracket(Side::Right),
+                    '{' => Token::Bracket(Side::Left),
+                    ';' => Token::EndOfLine,
+                    '+' => Token::Operator(Operator::Addition),
+                    '-' => Token::Operator(Operator::Substraction),
+                    '/' => Token::Operator(Operator::Division),
+                    '*' => Token::Operator(Operator::Multiplication),
+                    '>' => Token::Operator(Operator::Greater),
+                    '<' => Token::Operator(Operator::Less),
+                    '=' => Token::Equal,
+                    ',' => Token::Comma,
+                    '#' => Token::Commentary,
+                    _ => return,
+                }
+            }
+        };
+
+        self.add_token(token);
     }
 }

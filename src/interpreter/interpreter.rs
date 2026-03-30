@@ -59,6 +59,18 @@ impl Interpreter {
                 Literal::None => Ok(Value::None),
             },
 
+            Expression::List(list) => {
+                let mut list_values: Vec<Value> = Vec::new();
+
+                for expression in list {
+                    let new_value: Value = self.evaluate_expression(expression)?;
+
+                    list_values.push(new_value);
+                }
+
+                Ok(Value::List(list_values))
+            }
+
             Expression::Binary {
                 left,
                 operator,

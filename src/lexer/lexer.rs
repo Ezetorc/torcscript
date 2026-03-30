@@ -3,7 +3,6 @@ use crate::abstract_syntax_tree::operator::Operator;
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
 use crate::lexer::keyword::Keyword;
-use crate::lexer::side::Side;
 use crate::lexer::token::Token;
 use crate::utilities::char_extension::CharExtension;
 
@@ -58,38 +57,34 @@ impl Lexer {
             "false" | "False" => Some(Token::Literal(Literal::Boolean(false))),
             "true" | "True" => Some(Token::Literal(Literal::Boolean(true))),
             "none" | "None" => Some(Token::Literal(Literal::None)),
-            "*" => Some(Token::Operator(Operator::Multiplication)),
             "print" => Some(Token::Keyword(Keyword::Print)),
-            "-" => Some(Token::Operator(Operator::Substraction)),
             "state" => Some(Token::Keyword(Keyword::Variable)),
-            "+" => Some(Token::Operator(Operator::Addition)),
-            "/" => Some(Token::Operator(Operator::Division)),
             "else" => Some(Token::Keyword(Keyword::Else)),
             "if" => Some(Token::Keyword(Keyword::If)),
             "is" => Some(Token::Operator(Operator::Equality)),
             "isnt" => Some(Token::Operator(Operator::Difference)),
             "not" => Some(Token::Operator(Operator::Negation)),
-            "<" => Some(Token::Operator(Operator::Less)),
-            "<=" => Some(Token::Operator(Operator::LessOrEqual)),
-            ">" => Some(Token::Operator(Operator::Greater)),
-            ">=" => Some(Token::Operator(Operator::GreaterOrEqual)),
-            "}" => Some(Token::Bracket(Side::Right)),
-            "{" => Some(Token::Bracket(Side::Left)),
             "and" => Some(Token::Operator(Operator::And)),
+            "List" => Some(Token::List),
             "or" => Some(Token::Operator(Operator::Or)),
-            "#" => Some(Token::Commentary),
-            ";" => Some(Token::EndOfLine),
-            "=" => Some(Token::Equal),
             _ => None,
         }
     }
 
     pub fn is_at_end(&self) -> bool {
-        self.current >= self.source.len()
+        self.current >= self.source.len() - 1
     }
 
     pub fn get_current_char(&self) -> char {
         self.source[self.current]
+    }
+
+    pub fn get_next_char(&self) -> Option<char> {
+        if !self.is_at_end() {
+            return Some(self.source[self.current + 1]);
+        }
+
+        None
     }
 
     pub fn add_token(&mut self, token: Token) {

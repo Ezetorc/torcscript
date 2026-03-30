@@ -8,12 +8,7 @@ impl Interpreter {
     pub fn handle_print(&mut self, expression: &Expression) -> Result<(), LangError> {
         let value: Value = self.evaluate_expression(expression)?;
 
-        match value {
-            Value::Number(number) => println!("{}", number),
-            Value::String(string) => println!("{}", string),
-            Value::Boolean(boolean) => println!("{}", boolean),
-            Value::None => println!("None"),
-        }
+        println!("{value}");
 
         Ok(())
     }
@@ -27,10 +22,11 @@ impl Interpreter {
         let value: Value = self.evaluate_expression(&condition)?;
 
         let condition_satisfied: bool = match value {
-            Value::None => return Ok(()),
+            Value::None => false,
             Value::Boolean(boolean) => boolean,
             Value::String(string) => !string.is_empty(),
             Value::Number(number) => number > 0,
+            Value::List(list) => list.len() > 0,
         };
 
         if condition_satisfied {

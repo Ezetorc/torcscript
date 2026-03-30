@@ -12,10 +12,13 @@ pub enum Token {
     Literal(Literal),
     Keyword(Keyword),
     Bracket(Side),
+    Parenthesis(Side),
     Commentary,
     EndOfLine,
     EndOfFile,
+    List,
     Equal,
+    Comma,
 }
 
 impl Display for Token {

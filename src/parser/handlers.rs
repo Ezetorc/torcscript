@@ -1,7 +1,7 @@
 use crate::{
     abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
     errors::{lang_error::LangError, parser_error::ParserError},
-    lexer::{keyword::Keyword, token::Token},
+    lexer::{keyword::Keyword, side::Side, token::Token},
     parser::parser::Parser,
 };
 
@@ -67,6 +67,24 @@ impl Parser {
             identifier,
             expression,
         })
+    }
+
+    pub fn handle_list(&mut self) -> Result<Expression, LangError> {
+        self.advance_expecting(Token::Parenthesis(Side::Left))?;
+
+        let mut elements = Vec::new();
+
+        while self.get_current_token() != Token::Parenthesis(Side::Right) {
+            elements.push(self.parse_expression()?);
+
+            if self.get_current_token() == Token::Comma {
+                self.advance();
+            }
+        }
+
+        self.advance_expecting(Token::Parenthesis(Side::Right))?;
+
+        Ok(Expression::List(elements))
     }
 
     pub fn handle_commentary(&mut self) {
