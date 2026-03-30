@@ -75,6 +75,8 @@ impl Lexer {
             ">=" => Some(Token::Operator(Operator::GreaterOrEqual)),
             "}" => Some(Token::Bracket(Side::Right)),
             "{" => Some(Token::Bracket(Side::Left)),
+            "and" => Some(Token::Operator(Operator::And)),
+            "or" => Some(Token::Operator(Operator::Or)),
             ";" => Some(Token::EndOfLine),
             "=" => Some(Token::Equal),
             _ => None,

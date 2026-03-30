@@ -19,9 +19,27 @@ impl Value {
                 Value::apply_binary_string_operator(left, operator, right)
             }
 
+            (Value::Boolean(left), Value::Boolean(right)) => {
+                Value::apply_binary_boolean_operator(left, operator, right)
+            }
+
             _ => Err(LangError::Interpreter(InterpreterError::TypeMismatch(
                 "Invalid operands".into(),
             ))),
+        }
+    }
+
+    pub fn apply_binary_boolean_operator(
+        left: bool,
+        operator: &Operator,
+        right: bool,
+    ) -> Result<Value, LangError> {
+        match operator {
+            Operator::And => Ok(Value::Boolean(left && right)),
+            Operator::Or => Ok(Value::Boolean(left || right)),
+            _ => Err(
+                InterpreterError::InvalidOperator(format!("Invalid operator {operator}")).into(),
+            ),
         }
     }
 
