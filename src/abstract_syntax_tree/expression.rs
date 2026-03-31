@@ -1,12 +1,13 @@
 use std::fmt::Display;
 
-use crate::abstract_syntax_tree::{literal::Literal, operator::Operator};
+use crate::abstract_syntax_tree::{action::Action, literal::Literal, operator::Operator};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     Identifier(String),
     Literal(Literal),
     List(Vec<Expression>),
+    Action(Action),
     Binary {
         left: Box<Expression>,
         operator: Operator,
@@ -22,6 +23,7 @@ impl Display for Expression {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Expression::Literal(literal) => write!(formatter, "{literal}"),
+            Expression::Action(action) => write!(formatter, "{action}"),
             Expression::List(list) => {
                 write!(formatter, "[List]:")?;
 
@@ -31,16 +33,16 @@ impl Display for Expression {
 
                 Ok(())
             }
-            Expression::Identifier(identifier) => write!(formatter, "{}", identifier),
+            Expression::Identifier(identifier) => write!(formatter, "{identifier}"),
             Expression::Binary {
                 left,
                 operator,
                 right,
-            } => write!(formatter, "({left} {operator} {right})"),
+            } => write!(formatter, "{left} {operator} {right}"),
             Expression::Unary {
                 operator,
                 expression,
-            } => write!(formatter, "({operator} {expression})"),
+            } => write!(formatter, "{operator}{expression}"),
         }
     }
 }

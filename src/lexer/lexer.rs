@@ -57,8 +57,9 @@ impl Lexer {
             "false" | "False" => Some(Token::Literal(Literal::Boolean(false))),
             "true" | "True" => Some(Token::Literal(Literal::Boolean(true))),
             "none" | "None" => Some(Token::Literal(Literal::None)),
+            "action" => Some(Token::Keyword(Keyword::Action)),
             "print" => Some(Token::Keyword(Keyword::Print)),
-            "state" => Some(Token::Keyword(Keyword::Variable)),
+            "state" => Some(Token::Keyword(Keyword::State)),
             "else" => Some(Token::Keyword(Keyword::Else)),
             "if" => Some(Token::Keyword(Keyword::If)),
             "is" => Some(Token::Operator(Operator::Equality)),
@@ -72,7 +73,7 @@ impl Lexer {
     }
 
     pub fn is_at_end(&self) -> bool {
-        self.current >= self.source.len() - 1
+        self.current >= self.source.len()
     }
 
     pub fn get_current_char(&self) -> char {
@@ -80,11 +81,11 @@ impl Lexer {
     }
 
     pub fn get_next_char(&self) -> Option<char> {
-        if !self.is_at_end() {
-            return Some(self.source[self.current + 1]);
+        if self.current + 1 < self.source.len() {
+            Some(self.source[self.current + 1])
+        } else {
+            None
         }
-
-        None
     }
 
     pub fn add_token(&mut self, token: Token) {

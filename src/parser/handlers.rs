@@ -1,5 +1,7 @@
 use crate::{
-    abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
+    abstract_syntax_tree::{
+        expression::Expression, literal::Literal, operator::Operator, statement::Statement,
+    },
     errors::{lang_error::LangError, parser_error::ParserError},
     lexer::{keyword::Keyword, side::Side, token::Token},
     parser::parser::Parser,
@@ -16,6 +18,36 @@ impl Parser {
         }
 
         Ok(Statement::Print { expression })
+    }
+
+    pub fn handle_action_declaration(&mut self) -> Result<Statement, LangError> {
+        self.advance();
+
+        let identifier: String = self.parse_identifier("Expected action identifier")?;
+
+        self.advance_expecting(Token::Parenthesis(Side::Left))?;
+
+        let parameters: Vec<String> = self.parse_parameters_identifiers()?;
+        let statements: Vec<Statement> = self.parse_block()?;
+
+        Ok(Statement::ActionDeclaration {
+            identifier,
+            parameters,
+            statements,
+        })
+    }
+
+    pub fn handle_action_execution(&mut self, identifier: String) -> Result<Statement, LangError> {
+        self.advance();
+
+        self.advance_expecting(Token::Parenthesis(Side::Left))?;
+
+        let parameters: Vec<Expression> = self.parse_arguments()?;
+
+        Ok(Statement::ActionExecution {
+            identifier,
+            parameters,
+        })
     }
 
     pub fn handle_condition(&mut self) -> Result<Statement, LangError> {
@@ -53,17 +85,14 @@ impl Parser {
         })
     }
 
-    pub fn handle_variable_assignation(
-        &mut self,
-        identifier: String,
-    ) -> Result<Statement, LangError> {
+    pub fn handle_state_assignation(&mut self, identifier: String) -> Result<Statement, LangError> {
         self.advance();
 
-        self.advance_expecting(Token::Equal)?;
+        self.advance_expecting(Token::Operator(Operator::Equal))?;
 
         let expression: Expression = self.parse_expression()?;
 
-        Ok(Statement::VariableAssignation {
+        Ok(Statement::StateAssignation {
             identifier,
             expression,
         })
@@ -97,7 +126,7 @@ impl Parser {
         self.advance();
     }
 
-    pub fn handle_variable_declaration(&mut self) -> Result<Statement, LangError> {
+    pub fn handle_state_declaration(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
         let identifier_token: Token = self.advance();
@@ -106,19 +135,19 @@ impl Parser {
             Token::Identifier(identifier) => {
                 let token: Token = self.advance();
 
-                let expression: Expression = if token == Token::Equal {
+                let expression: Expression = if token == Token::Operator(Operator::Equal) {
                     self.parse_expression()?
                 } else {
                     Expression::Literal(Literal::None)
                 };
 
-                Ok(Statement::VariableDeclaration {
+                Ok(Statement::StateDeclaration {
                     identifier,
                     expression,
                 })
             }
             _ => Err(ParserError::InvalidSyntax(format!(
-                "Expected variable identifier, found {:?}",
+                "Expected state identifier, found {:?}",
                 identifier_token
             ))
             .into()),

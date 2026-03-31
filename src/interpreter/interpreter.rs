@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{
     abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
@@ -5,13 +7,13 @@ use crate::{
 };
 
 pub struct Interpreter {
-    pub environment: Environment,
+    pub environment: Rc<RefCell<Environment>>,
 }
 
 impl Interpreter {
     fn new() -> Self {
         Self {
-            environment: Environment::new(),
+            environment: Rc::new(RefCell::new(Environment::new())),
         }
     }
 
@@ -28,25 +30,36 @@ impl Interpreter {
         Ok(())
     }
 
-    fn execute_statement(&mut self, statement: Statement) -> Result<(), LangError> {
+    pub fn execute_statement(&mut self, statement: Statement) -> Result<(), LangError> {
         match statement {
             Statement::Print { expression } => self.handle_print(&expression),
 
-            Statement::VariableDeclaration {
+            Statement::StateDeclaration {
                 identifier,
                 expression,
-            } => self.handle_variable_declaration(identifier, expression),
+            } => self.handle_state_declaration(identifier, expression),
 
-            Statement::VariableAssignation {
+            Statement::StateAssignation {
                 identifier,
                 expression,
-            } => self.handle_variable_assignation(identifier, expression),
+            } => self.handle_state_assignation(identifier, expression),
 
             Statement::Conditional {
                 condition,
                 statements,
                 else_statements,
             } => self.handle_conditional_statements(condition, statements, else_statements),
+
+            Statement::ActionDeclaration {
+                identifier,
+                parameters,
+                statements,
+            } => self.handle_action_declaration(identifier, parameters, statements),
+
+            Statement::ActionExecution {
+                identifier,
+                parameters,
+            } => self.handle_action_execution(identifier, parameters),
         }
     }
 
@@ -58,6 +71,8 @@ impl Interpreter {
                 Literal::Boolean(boolean) => Ok(Value::Boolean(*boolean)),
                 Literal::None => Ok(Value::None),
             },
+
+            Expression::Action(action) => Ok(Value::Action(action.clone())),
 
             Expression::List(list) => {
                 let mut list_values: Vec<Value> = Vec::new();
@@ -92,13 +107,13 @@ impl Interpreter {
             }
 
             Expression::Identifier(identifier) => {
-                let value: Option<&Value> = self.environment.get_variable(identifier);
+                let value: Option<Value> = self.environment.borrow().get(identifier);
 
                 if let Some(value) = value {
                     return Ok(value.clone());
                 } else {
                     return Err(InterpreterError::NotFound(format!(
-                        "Variable '{identifier}' not found"
+                        "State '{identifier}' not found"
                     ))
                     .into());
                 }

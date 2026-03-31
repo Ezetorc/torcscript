@@ -23,10 +23,12 @@ impl Parser {
         let mut abstract_syntax_tree: Vec<Statement> = Vec::new();
 
         while !self.is_at_end() {
-            if self.get_current_token() == Token::EndOfLine {
+            let current_token: Token = self.get_current_token();
+
+            if current_token == Token::EndOfLine {
                 self.advance();
                 continue;
-            } else if self.get_current_token() == Token::EndOfFile {
+            } else if current_token == Token::EndOfFile {
                 break;
             }
 
@@ -45,22 +47,35 @@ impl Parser {
 
         match token {
             Token::Identifier(identifier) => {
-                Ok(Some(self.handle_variable_assignation(identifier)?))
+                let next_token = self.get_next_token();
+
+                if let Some(next_token) = next_token {
+                    if next_token == Token::Operator(Operator::Equal) {
+                        return Ok(Some(self.handle_state_assignation(identifier)?));
+                    } else if next_token == Token::Parenthesis(Side::Left) {
+                        return Ok(Some(self.handle_action_execution(identifier)?));
+                    } else {
+                        return Err(ParserError::InvalidSyntax(
+                            "Expected state assignation or action execution".to_string(),
+                        )
+                        .into());
+                    }
+                }
+
+                Err(ParserError::InvalidSyntax("Unexpected end of file".to_string()).into())
             }
-            Token::Keyword(Keyword::Variable) => Ok(Some(self.handle_variable_declaration()?)),
+            Token::Keyword(Keyword::Action) => Ok(Some(self.handle_action_declaration()?)),
+            Token::Keyword(Keyword::State) => Ok(Some(self.handle_state_declaration()?)),
             Token::Keyword(Keyword::Print) => Ok(Some(self.handle_print()?)),
             Token::Keyword(Keyword::If) => Ok(Some(self.handle_condition()?)),
             Token::Commentary => {
                 self.handle_commentary();
                 Ok(None)
             }
-            Token::EndOfFile => Err(LangError::Parser(ParserError::InvalidSyntax(
-                "Unexpected end of file".to_string(),
-            ))),
             Token::EndOfLine => Ok(None),
-            _ => Err(LangError::from(ParserError::NotImplemented(
-                "Token parsement not yet implemented".to_string(),
-            ))),
+            _ => Err(LangError::from(ParserError::NotImplemented(format!(
+                "Token parsement not yet implemented: '{token}'"
+            )))),
         }
     }
 
@@ -74,6 +89,8 @@ impl Parser {
 
             if let Some(statement) = statement {
                 statements.push(statement);
+            } else {
+                self.advance();
             }
         }
 
@@ -166,6 +183,57 @@ impl Parser {
         }
     }
 
+    pub fn parse_identifier(&mut self, error_message: &str) -> Result<String, LangError> {
+        match self.advance() {
+            Token::Identifier(identifier) => Ok(identifier),
+            _ => Err(ParserError::InvalidSyntax(error_message.to_string()).into()),
+        }
+    }
+
+    pub fn parse_parameters_identifiers(&mut self) -> Result<Vec<String>, LangError> {
+        let mut parameters = Vec::new();
+
+        if self.get_current_token() == Token::Parenthesis(Side::Right) {
+            self.advance();
+            return Ok(parameters);
+        }
+
+        loop {
+            let name: String = self.parse_identifier("Expected parameter name")?;
+            parameters.push(name);
+
+            if self.get_current_token() != Token::Comma {
+                break;
+            }
+        }
+
+        self.advance_expecting(Token::Parenthesis(Side::Right))?;
+
+        Ok(parameters)
+    }
+
+    pub fn parse_arguments(&mut self) -> Result<Vec<Expression>, LangError> {
+        let mut arguments: Vec<Expression> = Vec::new();
+
+        if self.get_current_token() == Token::Parenthesis(Side::Right) {
+            self.advance();
+            return Ok(arguments);
+        }
+
+        loop {
+            let expression: Expression = self.parse_expression()?;
+            arguments.push(expression);
+
+            if self.get_current_token() != Token::Comma {
+                break;
+            }
+        }
+
+        self.advance_expecting(Token::Parenthesis(Side::Right))?;
+
+        Ok(arguments)
+    }
+
     pub fn advance(&mut self) -> Token {
         let token: Token = self.get_current_token();
 
@@ -191,6 +259,14 @@ impl Parser {
         }
 
         Ok(token)
+    }
+
+    pub fn get_next_token(&self) -> Option<Token> {
+        if self.current + 1 < self.tokens.len() {
+            Some(self.tokens[self.current + 1].clone())
+        } else {
+            None
+        }
     }
 
     pub fn get_current_token(&self) -> Token {

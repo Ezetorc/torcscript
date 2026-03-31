@@ -8,6 +8,7 @@ pub enum InterpreterError {
     NotFound(String),
     DivisionByZero(String),
     InvalidOperator(String),
+    InvalidAmount(String),
 }
 
 impl From<InterpreterError> for LangError {
@@ -22,7 +23,8 @@ impl Display for InterpreterError {
             Self::TypeMismatch(error)
             | Self::NotFound(error)
             | Self::DivisionByZero(error)
-            | Self::InvalidOperator(error) => write!(formatter, "{error}"),
+            | Self::InvalidOperator(error)
+            | Self::InvalidAmount(error) => write!(formatter, "{error}"),
         }
     }
 }

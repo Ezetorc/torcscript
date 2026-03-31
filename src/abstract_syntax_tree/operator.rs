@@ -15,6 +15,7 @@ pub enum Operator {
     LessOrEqual,
     And,
     Or,
+    Equal,
 }
 
 impl Operator {
@@ -55,6 +56,7 @@ impl Display for Operator {
             Operator::LessOrEqual => write!(formatter, "<="),
             Operator::And => write!(formatter, "and"),
             Operator::Or => write!(formatter, "or"),
+            Operator::Equal => write!(formatter, "="),
         }
     }
 }

@@ -1,7 +1,9 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{
-    abstract_syntax_tree::{expression::Expression, statement::Statement},
+    abstract_syntax_tree::{action::Action, expression::Expression, statement::Statement},
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    interpreter::{interpreter::Interpreter, value::value::Value},
+    interpreter::{environment::Environment, interpreter::Interpreter, value::value::Value},
 };
 
 impl Interpreter {
@@ -9,6 +11,82 @@ impl Interpreter {
         let value: Value = self.evaluate_expression(expression)?;
 
         println!("{value}");
+
+        Ok(())
+    }
+
+    pub fn handle_action_declaration(
+        &mut self,
+        identifier: String,
+        parameters: Vec<String>,
+        statements: Vec<Statement>,
+    ) -> Result<(), LangError> {
+        let action: Value = Value::Action(Action {
+            parameters,
+            statements,
+            closure: self.environment.clone(),
+        });
+
+        self.environment
+            .borrow_mut()
+            .set(identifier.clone(), action);
+
+        Ok(())
+    }
+
+    pub fn handle_action_execution(
+        &mut self,
+        identifier: String,
+        arguments: Vec<Expression>,
+    ) -> Result<(), LangError> {
+        let action: Option<Value> = self.environment.borrow().get(&identifier);
+        let arguments: Vec<Value> = arguments
+            .into_iter()
+            .map(|arg| self.evaluate_expression(&arg))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let action: Action = match action {
+            Some(Value::Action(action)) => action,
+            Some(_) => {
+                return Err(InterpreterError::NotFound(format!(
+                    "'{identifier}' is not a function"
+                ))
+                .into());
+            }
+            None => {
+                return Err(
+                    InterpreterError::NotFound(format!("Action '{identifier}' not found")).into(),
+                );
+            }
+        };
+
+        if action.parameters.len() != arguments.len() {
+            return Err(InterpreterError::InvalidAmount(format!(
+                "Expected {} arguments, got {}",
+                action.parameters.len(),
+                arguments.len()
+            ))
+            .into());
+        }
+
+        let new_environment: Rc<RefCell<Environment>> = Rc::new(RefCell::new(
+            Environment::new_with_parent(action.closure.clone()),
+        ));
+
+        for (parameter, argument) in action.parameters.iter().zip(arguments.into_iter()) {
+            new_environment
+                .borrow_mut()
+                .set(parameter.clone(), argument);
+        }
+
+        let previous_environment: Rc<RefCell<Environment>> = self.environment.clone();
+        self.environment = new_environment;
+
+        for statement in action.statements {
+            self.execute_statement(statement)?;
+        }
+
+        self.environment = previous_environment;
 
         Ok(())
     }
@@ -27,6 +105,7 @@ impl Interpreter {
             Value::String(string) => !string.is_empty(),
             Value::Number(number) => number > 0,
             Value::List(list) => list.len() > 0,
+            Value::Action(_) => true,
         };
 
         if condition_satisfied {
@@ -38,34 +117,34 @@ impl Interpreter {
         Ok(())
     }
 
-    pub fn handle_variable_declaration(
+    pub fn handle_state_declaration(
         &mut self,
         identifier: String,
         expression: Expression,
     ) -> Result<(), LangError> {
         let value: Value = self.evaluate_expression(&expression)?;
 
-        self.environment.set_variable(identifier, value);
+        self.environment.borrow_mut().set(identifier, value);
 
         Ok(())
     }
 
-    pub fn handle_variable_assignation(
+    pub fn handle_state_assignation(
         &mut self,
         identifier: String,
         expression: Expression,
     ) -> Result<(), LangError> {
-        let current_value: Option<&Value> = self.environment.get_variable(identifier.as_str());
+        let current_value: Option<Value> = self.environment.borrow().get(identifier.as_str());
 
         if let Some(_) = current_value {
             let new_value: Value = self.evaluate_expression(&expression)?;
 
-            self.environment.set_variable(identifier, new_value);
+            self.environment.borrow_mut().set(identifier, new_value);
 
             Ok(())
         } else {
             return Err(
-                InterpreterError::NotFound(format!("Variable '{identifier}' not found")).into(),
+                InterpreterError::NotFound(format!("State '{identifier}' not found")).into(),
             );
         }
     }

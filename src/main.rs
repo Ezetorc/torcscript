@@ -16,7 +16,7 @@ mod utilities;
 
 fn main() {
     if let Err(error) = run() {
-        println!("{}", error);
+        print!("{}", error);
     }
 }
 
@@ -24,10 +24,28 @@ fn run() -> Result<(), LangError> {
     let source: String = read_file("src/examples/main.torc");
 
     let tokens: Vec<Token> = Lexer::tokenize(source)?;
-    println!("Tokens: {:?}", tokens);
+    print!("Tokens: ");
+
+    println!(
+        "[{}]",
+        tokens
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
 
     let statements: Vec<Statement> = Parser::parse(tokens)?;
-    println!("Statements: {:?}", statements);
+    print!("Statements: ");
+
+    println!(
+        "[{}]",
+        statements
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
 
     Interpreter::execute(statements)?;
     println!("Program finished");

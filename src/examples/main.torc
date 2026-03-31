@@ -1,3 +1,9 @@
-state array = List(1, 2, 3);
+state mensaje = "hola";
 
-print array;
+action print_message(message) {
+    print message;
+};
+
+print_message(mensaje);
+print_message("jaja");
+print_message(1 + 2 + 5);

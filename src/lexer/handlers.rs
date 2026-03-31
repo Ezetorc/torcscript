@@ -92,7 +92,7 @@ impl Lexer {
                     '*' => Token::Operator(Operator::Multiplication),
                     '>' => Token::Operator(Operator::Greater),
                     '<' => Token::Operator(Operator::Less),
-                    '=' => Token::Equal,
+                    '=' => Token::Operator(Operator::Equal),
                     ',' => Token::Comma,
                     '#' => Token::Commentary,
                     _ => return,

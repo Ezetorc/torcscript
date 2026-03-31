@@ -12,7 +12,7 @@ impl fmt::Display for Literal {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Literal::Boolean(boolean) => write!(formatter, "{}", boolean),
-            Literal::String(string) => write!(formatter, "{}", string),
+            Literal::String(string) => write!(formatter, "\"{}\"", string),
             Literal::Number(number) => write!(formatter, "{}", number),
             Literal::None => write!(formatter, "None"),
         }
