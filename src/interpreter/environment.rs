@@ -1,6 +1,9 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use crate::interpreter::value::value::Value;
+use crate::{
+    errors::{interpreter_error::InterpreterError, lang_error::LangError},
+    interpreter::value::value::Value,
+};
 
 #[derive(Debug, Clone)]
 pub struct Environment {
@@ -23,12 +26,21 @@ impl Environment {
         }
     }
 
-    pub fn set(&mut self, name: String, value: Value) -> () {
-        if let Some(parent) = &self.parent {
-            return parent.borrow_mut().set(name, value);
-        } else {
+    pub fn define(&mut self, name: String, value: Value) {
+        self.values.insert(name, value);
+    }
+
+    pub fn assign(&mut self, name: String, value: Value) -> Result<(), LangError> {
+        if self.values.contains_key(&name) {
             self.values.insert(name, value);
+            return Ok(());
         }
+
+        if let Some(parent) = &self.parent {
+            return parent.borrow_mut().assign(name, value);
+        }
+
+        Err(InterpreterError::NotFound(format!("'{name}' not found")).into())
     }
 
     pub fn get(&self, name: &str) -> Option<Value> {

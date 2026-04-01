@@ -122,10 +122,9 @@ impl Interpreter {
                 if let Some(value) = value {
                     return Ok(value.clone());
                 } else {
-                    return Err(InterpreterError::NotFound(format!(
-                        "State '{identifier}' not found"
-                    ))
-                    .into());
+                    return Err(
+                        InterpreterError::NotFound(format!("'{identifier}' not found")).into(),
+                    );
                 }
             }
         }

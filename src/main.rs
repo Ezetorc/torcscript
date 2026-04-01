@@ -7,6 +7,8 @@ use crate::{
     utilities::read_file::read_file,
 };
 
+use colored::Colorize;
+
 mod abstract_syntax_tree;
 mod errors;
 mod interpreter;
@@ -24,7 +26,7 @@ fn run() -> Result<(), LangError> {
     let source: String = read_file("src/examples/main.torc");
 
     let tokens: Vec<Token> = Lexer::tokenize(source)?;
-    print!("Tokens: ");
+    print!("{}", "Tokens: ".red().bold());
 
     println!(
         "[{}]",
@@ -36,7 +38,7 @@ fn run() -> Result<(), LangError> {
     );
 
     let statements: Vec<Statement> = Parser::parse(tokens)?;
-    print!("Statements: ");
+    print!("{}", "Statements: ".red().bold());
 
     println!(
         "[{}]",

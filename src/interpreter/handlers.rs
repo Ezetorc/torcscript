@@ -30,7 +30,7 @@ impl Interpreter {
 
         self.environment
             .borrow_mut()
-            .set(identifier.clone(), action);
+            .define(identifier.clone(), action);
 
         Ok(())
     }
@@ -77,7 +77,7 @@ impl Interpreter {
         for (parameter, argument) in action.parameters.iter().zip(arguments.into_iter()) {
             new_environment
                 .borrow_mut()
-                .set(parameter.clone(), argument);
+                .define(parameter.clone(), argument);
         }
 
         let previous_environment: Rc<RefCell<Environment>> = self.environment.clone();
@@ -126,7 +126,7 @@ impl Interpreter {
     ) -> Result<(), LangError> {
         let value: Value = self.evaluate_expression(&expression)?;
 
-        self.environment.borrow_mut().set(identifier, value);
+        self.environment.borrow_mut().define(identifier, value);
 
         Ok(())
     }
@@ -141,7 +141,9 @@ impl Interpreter {
         if let Some(_) = current_value {
             let new_value: Value = self.evaluate_expression(&expression)?;
 
-            self.environment.borrow_mut().set(identifier, new_value);
+            self.environment
+                .borrow_mut()
+                .assign(identifier, new_value)?;
 
             Ok(())
         } else {

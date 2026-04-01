@@ -4,8 +4,8 @@ action print_character(name, age) {
     print character;
 }
 
-print_character("Juan", 15);
+state character = List("Hola", 123);
 
-state characters = List(Object(name: "Mateo", edad: 16 + 3));
+print_character("Juan", 1);
 
-print characters;
+print character;
