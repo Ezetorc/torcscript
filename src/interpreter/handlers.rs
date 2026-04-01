@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
@@ -10,7 +11,7 @@ impl Interpreter {
     pub fn handle_print(&mut self, expression: &Expression) -> Result<(), LangError> {
         let value: Value = self.evaluate_expression(expression)?;
 
-        println!("{value}");
+        println!("{} {value}", ">".green());
 
         Ok(())
     }
@@ -105,6 +106,7 @@ impl Interpreter {
             Value::String(string) => !string.is_empty(),
             Value::Number(number) => number > 0,
             Value::List(list) => list.len() > 0,
+            Value::Object(object) => object.len() > 0,
             Value::Action(_) => true,
         };
 

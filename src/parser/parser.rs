@@ -179,6 +179,7 @@ impl Parser {
             Token::Literal(literal) => Ok(Expression::Literal(literal)),
             Token::Identifier(name) => Ok(Expression::Identifier(name)),
             Token::List => Ok(self.handle_list()?),
+            Token::Object => Ok(self.handle_object()?),
             _ => Err(ParserError::NotFound(format!("Unexpected token '{token}'")).into()),
         }
     }
@@ -191,20 +192,20 @@ impl Parser {
     }
 
     pub fn parse_parameters_identifiers(&mut self) -> Result<Vec<String>, LangError> {
-        let mut parameters = Vec::new();
+        let mut parameters: Vec<String> = Vec::new();
 
         if self.get_current_token() == Token::Parenthesis(Side::Right) {
             self.advance();
             return Ok(parameters);
         }
 
-        loop {
+        while !self.is_at_end() && self.get_current_token() != Token::Parenthesis(Side::Right) {
+            if self.get_current_token() == Token::Comma {
+                self.advance();
+            }
+
             let name: String = self.parse_identifier("Expected parameter name")?;
             parameters.push(name);
-
-            if self.get_current_token() != Token::Comma {
-                break;
-            }
         }
 
         self.advance_expecting(Token::Parenthesis(Side::Right))?;
@@ -220,13 +221,13 @@ impl Parser {
             return Ok(arguments);
         }
 
-        loop {
+        while !self.is_at_end() && self.get_current_token() != Token::Parenthesis(Side::Right) {
+            if self.get_current_token() == Token::Comma {
+                self.advance();
+            }
+
             let expression: Expression = self.parse_expression()?;
             arguments.push(expression);
-
-            if self.get_current_token() != Token::Comma {
-                break;
-            }
         }
 
         self.advance_expecting(Token::Parenthesis(Side::Right))?;

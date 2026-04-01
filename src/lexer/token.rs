@@ -19,7 +19,9 @@ pub enum Token {
     EndOfLine,
     EndOfFile,
     List,
+    Object,
     Comma,
+    Colon,
 }
 
 impl Display for Token {
@@ -81,7 +83,11 @@ impl Display for Token {
 
             Token::List => write!(formatter, "{}", "List".blue()),
 
-            Token::Comma => write!(formatter, "{}", ",".bold()),
+            Token::Object => write!(formatter, "{}", "Object".blue()),
+
+            Token::Comma => write!(formatter, "{}", "Comma".blue()),
+
+            Token::Colon => write!(formatter, "{}", "Colon".blue()),
         }
     }
 }

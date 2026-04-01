@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     abstract_syntax_tree::{
         expression::Expression, literal::Literal, operator::Operator, statement::Statement,
@@ -101,7 +103,7 @@ impl Parser {
     pub fn handle_list(&mut self) -> Result<Expression, LangError> {
         self.advance_expecting(Token::Parenthesis(Side::Left))?;
 
-        let mut elements = Vec::new();
+        let mut elements: Vec<Expression> = Vec::new();
 
         while self.get_current_token() != Token::Parenthesis(Side::Right) {
             elements.push(self.parse_expression()?);
@@ -114,6 +116,39 @@ impl Parser {
         self.advance_expecting(Token::Parenthesis(Side::Right))?;
 
         Ok(Expression::List(elements))
+    }
+
+    pub fn handle_object(&mut self) -> Result<Expression, LangError> {
+        self.advance_expecting(Token::Parenthesis(Side::Left))?;
+
+        let mut fields: HashMap<String, Expression> = HashMap::new();
+
+        while !self.is_at_end() && self.get_current_token() != Token::Parenthesis(Side::Right) {
+            let token: Token = self.advance();
+
+            let identifier: String = match token {
+                Token::Identifier(identifier) => identifier,
+                _ => {
+                    return Err(ParserError::InvalidSyntax(format!(
+                        "Expected field name, found '{token}'"
+                    ))
+                    .into());
+                }
+            };
+
+            self.advance_expecting(Token::Colon)?;
+
+            let expression: Expression = self.parse_expression()?;
+            fields.insert(identifier, expression);
+
+            if self.get_current_token() == Token::Comma {
+                self.advance();
+            }
+        }
+
+        self.advance_expecting(Token::Parenthesis(Side::Right))?;
+
+        Ok(Expression::Object(fields))
     }
 
     pub fn handle_commentary(&mut self) {

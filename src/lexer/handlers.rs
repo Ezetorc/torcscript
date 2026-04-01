@@ -95,6 +95,7 @@ impl Lexer {
                     '=' => Token::Operator(Operator::Equal),
                     ',' => Token::Comma,
                     '#' => Token::Commentary,
+                    ':' => Token::Colon,
                     _ => return,
                 }
             }

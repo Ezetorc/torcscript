@@ -1,13 +1,13 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
-use crate::abstract_syntax_tree::{action::Action, literal::Literal, operator::Operator};
+use crate::abstract_syntax_tree::{literal::Literal, operator::Operator};
 
 #[derive(Debug, Clone)]
 pub enum Expression {
     Identifier(String),
     Literal(Literal),
     List(Vec<Expression>),
-    Action(Action),
+    Object(HashMap<String, Expression>),
     Binary {
         left: Box<Expression>,
         operator: Operator,
@@ -23,12 +23,24 @@ impl Display for Expression {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Expression::Literal(literal) => write!(formatter, "{literal}"),
-            Expression::Action(action) => write!(formatter, "{action}"),
             Expression::List(list) => {
                 write!(formatter, "[List]:")?;
 
                 for expression in list {
                     write!(formatter, "{expression}")?;
+                }
+
+                Ok(())
+            }
+            Expression::Object(object) => {
+                write!(formatter, "[Object]: ")?;
+
+                for (index, (identifier, expression)) in object.iter().enumerate() {
+                    if index == object.len() - 1 {
+                        write!(formatter, "{identifier}: {expression}")?;
+                    } else {
+                        write!(formatter, "{identifier}: {expression}, ")?;
+                    }
                 }
 
                 Ok(())

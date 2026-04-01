@@ -67,6 +67,7 @@ impl Lexer {
             "not" => Some(Token::Operator(Operator::Negation)),
             "and" => Some(Token::Operator(Operator::And)),
             "List" => Some(Token::List),
+            "Object" => Some(Token::Object),
             "or" => Some(Token::Operator(Operator::Or)),
             _ => None,
         }

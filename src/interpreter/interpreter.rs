@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
@@ -72,8 +72,6 @@ impl Interpreter {
                 Literal::None => Ok(Value::None),
             },
 
-            Expression::Action(action) => Ok(Value::Action(action.clone())),
-
             Expression::List(list) => {
                 let mut list_values: Vec<Value> = Vec::new();
 
@@ -84,6 +82,18 @@ impl Interpreter {
                 }
 
                 Ok(Value::List(list_values))
+            }
+
+            Expression::Object(object) => {
+                let mut fields: HashMap<String, Value> = HashMap::new();
+
+                for (identifier, expression) in object {
+                    let new_value: Value = self.evaluate_expression(expression)?;
+
+                    fields.insert(identifier.clone(), new_value);
+                }
+
+                Ok(Value::Object(fields))
             }
 
             Expression::Binary {

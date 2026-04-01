@@ -48,7 +48,6 @@ fn run() -> Result<(), LangError> {
     );
 
     Interpreter::execute(statements)?;
-    println!("Program finished");
 
     Ok(())
 }

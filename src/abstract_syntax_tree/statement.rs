@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::fmt::{Display, Result};
 
-use crate::{abstract_syntax_tree::expression::Expression, interpreter::value::value::Value};
+use crate::abstract_syntax_tree::expression::Expression;
 
 #[derive(Debug, Clone)]
 pub enum Statement {

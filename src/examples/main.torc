@@ -1,9 +1,11 @@
-state mensaje = "hola";
+action print_character(name, age) {
+    state character = Object(name: name, edad: 15 + age);
 
-action print_message(message) {
-    print message;
-};
+    print character;
+}
 
-print_message(mensaje);
-print_message("jaja");
-print_message(1 + 2 + 5);
+print_character("Juan", 15);
+
+state characters = List(Object(name: "Mateo", edad: 16 + 3));
+
+print characters;
