@@ -1,19 +1,19 @@
+use colored::Colorize;
+
 use crate::{
-    abstract_syntax_tree::statement::Statement,
     errors::lang_error::LangError,
-    interpreter::interpreter::Interpreter,
-    lexer::{lexer::Lexer, token::Token},
-    parser::parser::Parser,
+    frontend::{
+        abstract_syntax_tree::statement::Statement,
+        lexer::{lexer::Lexer, token::token::Token},
+        parser::parser::Parser,
+    },
+    runtime::interpreter::interpreter::Interpreter,
     utilities::read_file::read_file,
 };
 
-use colored::Colorize;
-
-mod abstract_syntax_tree;
 mod errors;
-mod interpreter;
-mod lexer;
-mod parser;
+mod frontend;
+mod runtime;
 mod utilities;
 
 fn main() {
