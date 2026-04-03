@@ -2,12 +2,16 @@ use std::{collections::HashMap, fmt::Display};
 
 use crate::abstract_syntax_tree::{literal::Literal, operator::Operator};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
     Identifier(String),
     Literal(Literal),
     List(Vec<Expression>),
     Object(HashMap<String, Expression>),
+    Assignment {
+        target: Box<Expression>,
+        expression: Box<Expression>,
+    },
     Binary {
         left: Box<Expression>,
         operator: Operator,
@@ -16,6 +20,14 @@ pub enum Expression {
     Unary {
         operator: Operator,
         expression: Box<Expression>,
+    },
+    Call {
+        callee: Box<Expression>,
+        arguments: Vec<Expression>,
+    },
+    Member {
+        expression: Box<Expression>,
+        property: String,
     },
 }
 
@@ -31,6 +43,19 @@ impl Display for Expression {
                 }
 
                 Ok(())
+            }
+            Expression::Assignment { target, expression } => {
+                write!(formatter, "[Assigment]: ({target}) = ({expression})")
+            }
+            Expression::Call {
+                callee: _callee,
+                arguments: _arguments,
+            } => write!(formatter, "[Call]"),
+            Expression::Member {
+                expression,
+                property,
+            } => {
+                write!(formatter, "[Member]: ({expression}).{property}")
             }
             Expression::Object(object) => {
                 write!(formatter, "[Object]: ")?;

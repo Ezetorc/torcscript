@@ -26,7 +26,7 @@ fn run() -> Result<(), LangError> {
     let source: String = read_file("src/examples/main.torc");
 
     let tokens: Vec<Token> = Lexer::tokenize(source)?;
-    print!("{}", "Tokens: ".red().bold());
+    print!("{}", "Tokens: ".green().bold());
 
     println!(
         "[{}]",
@@ -38,7 +38,7 @@ fn run() -> Result<(), LangError> {
     );
 
     let statements: Vec<Statement> = Parser::parse(tokens)?;
-    print!("{}", "Statements: ".red().bold());
+    print!("{}", "Statements: ".green().bold());
 
     println!(
         "[{}]",

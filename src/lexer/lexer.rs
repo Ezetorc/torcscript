@@ -2,6 +2,7 @@ use crate::abstract_syntax_tree::literal::Literal;
 use crate::abstract_syntax_tree::operator::Operator;
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
+use crate::lexer::constructor::Constructor;
 use crate::lexer::keyword::Keyword;
 use crate::lexer::token::Token;
 use crate::utilities::char_extension::CharExtension;
@@ -66,8 +67,8 @@ impl Lexer {
             "isnt" => Some(Token::Operator(Operator::Difference)),
             "not" => Some(Token::Operator(Operator::Negation)),
             "and" => Some(Token::Operator(Operator::And)),
-            "List" => Some(Token::List),
-            "Object" => Some(Token::Object),
+            "Object" => Some(Token::Constructor(Constructor::Object)),
+            "List" => Some(Token::Constructor(Constructor::List)),
             "or" => Some(Token::Operator(Operator::Or)),
             _ => None,
         }

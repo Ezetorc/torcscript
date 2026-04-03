@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{abstract_syntax_tree::statement::Statement, interpreter::environment::Environment};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Action {
     pub parameters: Vec<String>,
     pub statements: Vec<Statement>,

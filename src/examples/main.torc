@@ -1,11 +1,11 @@
-action print_character(name, age) {
-    state character = Object(name: name, edad: 15 + age);
+state my_list = List(123, 456, 789);
 
-    print character;
-}
+print my_list;
 
-state character = List("Hola", 123);
+my_list.add(101112);
 
-print_character("Juan", 1);
+print my_list;
 
-print character;
+my_list.remove(123);
+
+print my_list;

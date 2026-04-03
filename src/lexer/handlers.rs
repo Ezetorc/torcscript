@@ -96,6 +96,7 @@ impl Lexer {
                     ',' => Token::Comma,
                     '#' => Token::Commentary,
                     ':' => Token::Colon,
+                    '.' => Token::Dot,
                     _ => return,
                 }
             }

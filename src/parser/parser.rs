@@ -1,7 +1,7 @@
 use crate::{
     abstract_syntax_tree::{expression::Expression, operator::Operator, statement::Statement},
     errors::{lang_error::LangError, parser_error::ParserError},
-    lexer::{keyword::Keyword, side::Side, token::Token},
+    lexer::{constructor::Constructor, keyword::Keyword, side::Side, token::Token},
 };
 
 pub struct Parser {
@@ -32,7 +32,7 @@ impl Parser {
                 break;
             }
 
-            let statement: Option<Statement> = self.parse_statement()?;
+            let statement: Option<Statement> = self.parse_token()?;
 
             if let Some(statement) = statement {
                 abstract_syntax_tree.push(statement);
@@ -42,28 +42,10 @@ impl Parser {
         Ok(abstract_syntax_tree)
     }
 
-    fn parse_statement(&mut self) -> Result<Option<Statement>, LangError> {
+    fn parse_token(&mut self) -> Result<Option<Statement>, LangError> {
         let token: Token = self.get_current_token();
 
         match token {
-            Token::Identifier(identifier) => {
-                let next_token = self.get_next_token();
-
-                if let Some(next_token) = next_token {
-                    if next_token == Token::Operator(Operator::Equal) {
-                        return Ok(Some(self.handle_state_assignation(identifier)?));
-                    } else if next_token == Token::Parenthesis(Side::Left) {
-                        return Ok(Some(self.handle_action_execution(identifier)?));
-                    } else {
-                        return Err(ParserError::InvalidSyntax(
-                            "Expected state assignation or action execution".to_string(),
-                        )
-                        .into());
-                    }
-                }
-
-                Err(ParserError::InvalidSyntax("Unexpected end of file".to_string()).into())
-            }
             Token::Keyword(Keyword::Action) => Ok(Some(self.handle_action_declaration()?)),
             Token::Keyword(Keyword::State) => Ok(Some(self.handle_state_declaration()?)),
             Token::Keyword(Keyword::Print) => Ok(Some(self.handle_print()?)),
@@ -73,9 +55,11 @@ impl Parser {
                 Ok(None)
             }
             Token::EndOfLine => Ok(None),
-            _ => Err(LangError::from(ParserError::NotImplemented(format!(
-                "Token parsement not yet implemented: '{token}'"
-            )))),
+
+            _ => {
+                let expression: Expression = self.parse_expression()?;
+                Ok(Some(Statement::Expression { expression }))
+            }
         }
     }
 
@@ -85,7 +69,7 @@ impl Parser {
         let mut statements: Vec<Statement> = Vec::new();
 
         while !self.is_at_end() && self.get_current_token() != Token::Bracket(Side::Right) {
-            let statement: Option<Statement> = self.parse_statement()?;
+            let statement: Option<Statement> = self.parse_token()?;
 
             if let Some(statement) = statement {
                 statements.push(statement);
@@ -100,7 +84,24 @@ impl Parser {
     }
 
     pub fn parse_expression(&mut self) -> Result<Expression, LangError> {
-        self.parse_term()
+        self.parse_assignment()
+    }
+
+    fn parse_assignment(&mut self) -> Result<Expression, LangError> {
+        let left: Expression = self.parse_term()?;
+
+        if self.get_current_token() == Token::Operator(Operator::Equal) {
+            self.advance();
+
+            let value: Expression = self.parse_assignment()?;
+
+            return Ok(Expression::Assignment {
+                target: Box::new(left),
+                expression: Box::new(value),
+            });
+        }
+
+        Ok(left)
     }
 
     pub fn parse_term(&mut self) -> Result<Expression, LangError> {
@@ -168,8 +169,52 @@ impl Parser {
                 })
             }
 
-            _ => self.parse_primary(),
+            _ => self.parse_postfix(),
         }
+    }
+
+    fn parse_postfix(&mut self) -> Result<Expression, LangError> {
+        let mut expression: Expression = self.parse_primary()?;
+
+        loop {
+            match self.get_current_token() {
+                Token::Dot => {
+                    self.advance();
+
+                    let name: String = match self.get_current_token() {
+                        Token::Identifier(name) => name,
+                        _ => {
+                            return Err(ParserError::InvalidSyntax(
+                                "Expected property name".into(),
+                            )
+                            .into());
+                        }
+                    };
+
+                    self.advance();
+
+                    expression = Expression::Member {
+                        expression: Box::new(expression),
+                        property: name,
+                    };
+                }
+
+                Token::Parenthesis(Side::Left) => {
+                    self.advance();
+
+                    let arguments: Vec<Expression> = self.parse_arguments()?;
+
+                    expression = Expression::Call {
+                        callee: Box::new(expression),
+                        arguments,
+                    };
+                }
+
+                _ => break,
+            }
+        }
+
+        Ok(expression)
     }
 
     fn parse_primary(&mut self) -> Result<Expression, LangError> {
@@ -178,8 +223,10 @@ impl Parser {
         match token {
             Token::Literal(literal) => Ok(Expression::Literal(literal)),
             Token::Identifier(name) => Ok(Expression::Identifier(name)),
-            Token::List => Ok(self.handle_list()?),
-            Token::Object => Ok(self.handle_object()?),
+            Token::Constructor(constructor) => match constructor {
+                Constructor::Object => Ok(self.handle_object()?),
+                Constructor::List => Ok(self.handle_list()?),
+            },
             _ => Err(ParserError::NotFound(format!("Unexpected token '{token}'")).into()),
         }
     }
@@ -260,14 +307,6 @@ impl Parser {
         }
 
         Ok(token)
-    }
-
-    pub fn get_next_token(&self) -> Option<Token> {
-        if self.current + 1 < self.tokens.len() {
-            Some(self.tokens[self.current + 1].clone())
-        } else {
-            None
-        }
     }
 
     pub fn get_current_token(&self) -> Token {

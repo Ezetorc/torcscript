@@ -3,7 +3,14 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use crate::{
     abstract_syntax_tree::{expression::Expression, literal::Literal, statement::Statement},
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    interpreter::{environment::Environment, value::value::Value},
+    interpreter::{
+        environment::Environment,
+        native_members::list::{
+            get_list_methods::get_list_methods, get_list_properties::get_list_properties,
+        },
+        native_method::NativeMethod,
+        value::value::Value,
+    },
 };
 
 pub struct Interpreter {
@@ -39,11 +46,6 @@ impl Interpreter {
                 expression,
             } => self.handle_state_declaration(identifier, expression),
 
-            Statement::StateAssignation {
-                identifier,
-                expression,
-            } => self.handle_state_assignation(identifier, expression),
-
             Statement::Conditional {
                 condition,
                 statements,
@@ -56,10 +58,10 @@ impl Interpreter {
                 statements,
             } => self.handle_action_declaration(identifier, parameters, statements),
 
-            Statement::ActionExecution {
-                identifier,
-                parameters,
-            } => self.handle_action_execution(identifier, parameters),
+            Statement::Expression { expression } => {
+                self.evaluate_expression(&expression)?;
+                Ok(())
+            }
         }
     }
 
@@ -81,7 +83,7 @@ impl Interpreter {
                     list_values.push(new_value);
                 }
 
-                Ok(Value::List(list_values))
+                Ok(Value::List(Rc::new(RefCell::new(list_values))))
             }
 
             Expression::Object(object) => {
@@ -93,7 +95,7 @@ impl Interpreter {
                     fields.insert(identifier.clone(), new_value);
                 }
 
-                Ok(Value::Object(fields))
+                Ok(Value::Object(Rc::new(RefCell::new(fields))))
             }
 
             Expression::Binary {
@@ -127,6 +129,90 @@ impl Interpreter {
                     );
                 }
             }
+
+            Expression::Member {
+                expression,
+                property,
+            } => {
+                let value: Value = self.evaluate_expression(expression)?;
+                let native_property = Interpreter::get_native_property(&value, property)?;
+
+                if let Some(native_property) = native_property {
+                    return Ok(native_property);
+                }
+
+                if let Some(method) = Interpreter::get_native_method(&value, property) {
+                    return Ok(Value::BoundMethod {
+                        receiver: Box::new(value),
+                        method,
+                    });
+                }
+
+                if let Value::Object(map) = value {
+                    if let Some(value) = map.borrow().get(property) {
+                        return Ok(value.clone());
+                    }
+                }
+
+                Err(InterpreterError::NotFound(format!("Property '{property}' not found")).into())
+            }
+
+            Expression::Call { callee, arguments } => {
+                let callee_value: Value = self.evaluate_expression(callee)?;
+
+                let arguments: Vec<Value> = arguments
+                    .iter()
+                    .map(|arg| self.evaluate_expression(arg))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                match callee_value {
+                    Value::BoundMethod { receiver, method } => method(*receiver, arguments),
+
+                    Value::Action(action) => self.handle_action_execution(action, arguments),
+
+                    _ => Err(InterpreterError::NotCallable(format!(
+                        "'{callee_value}' is not callable"
+                    ))
+                    .into()),
+                }
+            }
+            Expression::Assignment { target, expression } => {
+                let value: Value = self.evaluate_expression(expression)?;
+
+                match &**target {
+                    Expression::Identifier(name) => {
+                        self.environment
+                            .borrow_mut()
+                            .assign(name.clone(), value.clone())?;
+
+                        Ok(value)
+                    }
+
+                    _ => Err(InterpreterError::InvalidAssignment(format!(
+                        "'{target}' is not assigneable"
+                    ))
+                    .into()),
+                }
+            }
+        }
+    }
+
+    pub fn get_native_method(value: &Value, name: &str) -> Option<NativeMethod> {
+        match value {
+            Value::List(_) => get_list_methods().get(name).copied(),
+            _ => None,
+        }
+    }
+
+    pub fn get_native_property(value: &Value, name: &str) -> Result<Option<Value>, LangError> {
+        match value {
+            Value::List(_) => {
+                if let Some(function) = get_list_properties().get(name) {
+                    return Ok(Some(function(value.clone())?));
+                }
+                Ok(None)
+            }
+            _ => Ok(None),
         }
     }
 }

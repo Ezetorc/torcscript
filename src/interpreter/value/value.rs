@@ -1,21 +1,57 @@
 use std::{
+    cell::RefCell,
     collections::HashMap,
     fmt::{Display, Formatter, Result},
+    rc::Rc,
 };
 
 use colored::Colorize;
 
-use crate::abstract_syntax_tree::action::Action;
+use crate::{abstract_syntax_tree::action::Action, interpreter::native_method::NativeMethod};
 
 #[derive(Debug, Clone)]
 pub enum Value {
     Number(i64),
     String(String),
     Boolean(bool),
-    List(Vec<Value>),
-    Object(HashMap<String, Value>),
+    List(Rc<RefCell<Vec<Value>>>),
+    Object(Rc<RefCell<HashMap<String, Value>>>),
     Action(Action),
+    BoundMethod {
+        receiver: Box<Value>,
+        method: NativeMethod,
+    },
     None,
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Value::Number(a), Value::Number(b)) => a == b,
+            (Value::String(a), Value::String(b)) => a == b,
+            (Value::Boolean(a), Value::Boolean(b)) => a == b,
+
+            (Value::List(a), Value::List(b)) => {
+                let a = a.borrow();
+                let b = b.borrow();
+                *a == *b
+            }
+
+            (Value::Object(a), Value::Object(b)) => {
+                let a = a.borrow();
+                let b = b.borrow();
+                *a == *b
+            }
+
+            (Value::BoundMethod { receiver: r1, .. }, Value::BoundMethod { receiver: r2, .. }) => {
+                r1 == r2
+            }
+
+            (Value::None, Value::None) => true,
+
+            _ => false,
+        }
+    }
 }
 
 impl Display for Value {
@@ -25,11 +61,15 @@ impl Display for Value {
             Value::Number(number) => write!(formatter, "{number}"),
             Value::Boolean(boolean) => write!(formatter, "{boolean}"),
             Value::Action(action) => write!(formatter, "{action}"),
+            Value::BoundMethod {
+                receiver: _,
+                method: _,
+            } => write!(formatter, "[BoundMethod]"),
             Value::List(list) => {
                 write!(formatter, "{}", "List(".bold())?;
 
-                for (index, value) in list.iter().enumerate() {
-                    if index == list.len() - 1 {
+                for (index, value) in list.borrow().iter().enumerate() {
+                    if index == list.borrow().len() - 1 {
                         write!(formatter, "{}", value.to_string().italic())?;
                     } else {
                         write!(formatter, "{}, ", value.to_string().italic())?;
@@ -43,8 +83,8 @@ impl Display for Value {
             Value::Object(object) => {
                 write!(formatter, "{}", "Object(".bold())?;
 
-                for (index, (identifier, value)) in object.iter().enumerate() {
-                    if index == object.len() - 1 {
+                for (index, (identifier, value)) in object.borrow().iter().enumerate() {
+                    if index == object.borrow().len() - 1 {
                         write!(formatter, "{identifier}: {}", value.to_string().italic())?;
                     } else {
                         write!(formatter, "{identifier}: {}, ", value.to_string().italic())?;

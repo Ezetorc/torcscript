@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    abstract_syntax_tree::{
-        expression::Expression, literal::Literal, operator::Operator, statement::Statement,
-    },
+    abstract_syntax_tree::{expression::Expression, operator::Operator, statement::Statement},
     errors::{lang_error::LangError, parser_error::ParserError},
     lexer::{keyword::Keyword, side::Side, token::Token},
     parser::parser::Parser,
@@ -39,19 +37,6 @@ impl Parser {
         })
     }
 
-    pub fn handle_action_execution(&mut self, identifier: String) -> Result<Statement, LangError> {
-        self.advance();
-
-        self.advance_expecting(Token::Parenthesis(Side::Left))?;
-
-        let parameters: Vec<Expression> = self.parse_arguments()?;
-
-        Ok(Statement::ActionExecution {
-            identifier,
-            parameters,
-        })
-    }
-
     pub fn handle_condition(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
@@ -84,19 +69,6 @@ impl Parser {
             condition,
             statements,
             else_statements: None,
-        })
-    }
-
-    pub fn handle_state_assignation(&mut self, identifier: String) -> Result<Statement, LangError> {
-        self.advance();
-
-        self.advance_expecting(Token::Operator(Operator::Equal))?;
-
-        let expression: Expression = self.parse_expression()?;
-
-        Ok(Statement::StateAssignation {
-            identifier,
-            expression,
         })
     }
 
@@ -164,28 +136,15 @@ impl Parser {
     pub fn handle_state_declaration(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
-        let identifier_token: Token = self.advance();
+        let identifier: String = self.parse_identifier("Expected state name")?;
 
-        match identifier_token {
-            Token::Identifier(identifier) => {
-                let token: Token = self.advance();
+        self.advance_expecting(Token::Operator(Operator::Equal))?;
 
-                let expression: Expression = if token == Token::Operator(Operator::Equal) {
-                    self.parse_expression()?
-                } else {
-                    Expression::Literal(Literal::None)
-                };
+        let expression: Expression = self.parse_expression()?;
 
-                Ok(Statement::StateDeclaration {
-                    identifier,
-                    expression,
-                })
-            }
-            _ => Err(ParserError::InvalidSyntax(format!(
-                "Expected state identifier, found {:?}",
-                identifier_token
-            ))
-            .into()),
-        }
+        Ok(Statement::StateDeclaration {
+            identifier,
+            expression,
+        })
     }
 }

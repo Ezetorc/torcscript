@@ -37,30 +37,9 @@ impl Interpreter {
 
     pub fn handle_action_execution(
         &mut self,
-        identifier: String,
-        arguments: Vec<Expression>,
-    ) -> Result<(), LangError> {
-        let action: Option<Value> = self.environment.borrow().get(&identifier);
-        let arguments: Vec<Value> = arguments
-            .into_iter()
-            .map(|arg| self.evaluate_expression(&arg))
-            .collect::<Result<Vec<_>, _>>()?;
-
-        let action: Action = match action {
-            Some(Value::Action(action)) => action,
-            Some(_) => {
-                return Err(InterpreterError::NotFound(format!(
-                    "'{identifier}' is not a function"
-                ))
-                .into());
-            }
-            None => {
-                return Err(
-                    InterpreterError::NotFound(format!("Action '{identifier}' not found")).into(),
-                );
-            }
-        };
-
+        action: Action,
+        arguments: Vec<Value>,
+    ) -> Result<Value, LangError> {
         if action.parameters.len() != arguments.len() {
             return Err(InterpreterError::InvalidAmount(format!(
                 "Expected {} arguments, got {}",
@@ -80,7 +59,8 @@ impl Interpreter {
                 .define(parameter.clone(), argument);
         }
 
-        let previous_environment: Rc<RefCell<Environment>> = self.environment.clone();
+        let previous_environment = self.environment.clone();
+
         self.environment = new_environment;
 
         for statement in action.statements {
@@ -89,7 +69,7 @@ impl Interpreter {
 
         self.environment = previous_environment;
 
-        Ok(())
+        Ok(Value::None)
     }
 
     pub fn handle_conditional_statements(
@@ -105,9 +85,9 @@ impl Interpreter {
             Value::Boolean(boolean) => boolean,
             Value::String(string) => !string.is_empty(),
             Value::Number(number) => number > 0,
-            Value::List(list) => list.len() > 0,
-            Value::Object(object) => object.len() > 0,
-            Value::Action(_) => true,
+            Value::List(list) => list.borrow().len() > 0,
+            Value::Object(object) => object.borrow().len() > 0,
+            _ => true,
         };
 
         if condition_satisfied {
@@ -129,27 +109,5 @@ impl Interpreter {
         self.environment.borrow_mut().define(identifier, value);
 
         Ok(())
-    }
-
-    pub fn handle_state_assignation(
-        &mut self,
-        identifier: String,
-        expression: Expression,
-    ) -> Result<(), LangError> {
-        let current_value: Option<Value> = self.environment.borrow().get(identifier.as_str());
-
-        if let Some(_) = current_value {
-            let new_value: Value = self.evaluate_expression(&expression)?;
-
-            self.environment
-                .borrow_mut()
-                .assign(identifier, new_value)?;
-
-            Ok(())
-        } else {
-            return Err(
-                InterpreterError::NotFound(format!("State '{identifier}' not found")).into(),
-            );
-        }
     }
 }

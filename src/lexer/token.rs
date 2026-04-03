@@ -4,7 +4,7 @@ use colored::Colorize;
 
 use crate::{
     abstract_syntax_tree::{literal::Literal, operator::Operator},
-    lexer::{keyword::Keyword, side::Side},
+    lexer::{constructor::Constructor, keyword::Keyword, side::Side},
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -15,12 +15,12 @@ pub enum Token {
     Keyword(Keyword),
     Bracket(Side),
     Parenthesis(Side),
+    Constructor(Constructor),
     Commentary,
     EndOfLine,
     EndOfFile,
-    List,
-    Object,
     Comma,
+    Dot,
     Colon,
 }
 
@@ -81,11 +81,17 @@ impl Display for Token {
 
             Token::EndOfFile => write!(formatter, "{}", "EndOfFile".bright_red()),
 
-            Token::List => write!(formatter, "{}", "List".blue()),
-
-            Token::Object => write!(formatter, "{}", "Object".blue()),
+            Token::Constructor(constructor) => write!(
+                formatter,
+                "{}{}{}",
+                "Constructor(".blue(),
+                constructor.to_string().yellow(),
+                ")".blue()
+            ),
 
             Token::Comma => write!(formatter, "{}", "Comma".blue()),
+
+            Token::Dot => write!(formatter, "{}", "Dot".blue()),
 
             Token::Colon => write!(formatter, "{}", "Colon".blue()),
         }

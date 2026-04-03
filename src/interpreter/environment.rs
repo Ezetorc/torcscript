@@ -5,7 +5,7 @@ use crate::{
     interpreter::value::value::Value,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Environment {
     pub values: HashMap<String, Value>,
     parent: Option<Rc<RefCell<Environment>>>,

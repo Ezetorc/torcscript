@@ -3,7 +3,7 @@ use std::fmt::{Display, Result};
 
 use crate::abstract_syntax_tree::expression::Expression;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     Print {
         expression: Expression,
@@ -12,23 +12,18 @@ pub enum Statement {
         identifier: String,
         expression: Expression,
     },
-    StateAssignation {
-        identifier: String,
-        expression: Expression,
-    },
     ActionDeclaration {
         identifier: String,
         parameters: Vec<String>,
         statements: Vec<Statement>,
     },
-    ActionExecution {
-        identifier: String,
-        parameters: Vec<Expression>,
-    },
     Conditional {
         condition: Expression,
         statements: Vec<Statement>,
         else_statements: Option<Vec<Statement>>,
+    },
+    Expression {
+        expression: Expression,
     },
 }
 
@@ -42,6 +37,7 @@ impl Display for Statement {
                 expression.to_string().italic(),
                 ")".blue()
             ),
+
             Statement::StateDeclaration {
                 identifier,
                 expression,
@@ -49,17 +45,6 @@ impl Display for Statement {
                 formatter,
                 "{}{}, {}{}",
                 "StateDeclaration(".blue(),
-                identifier.italic(),
-                expression.to_string().italic(),
-                ")".blue()
-            ),
-            Statement::StateAssignation {
-                identifier,
-                expression,
-            } => write!(
-                formatter,
-                "{}{}, {}{}",
-                "StateAssignation(".blue(),
                 identifier.italic(),
                 expression.to_string().italic(),
                 ")".blue()
@@ -95,25 +80,13 @@ impl Display for Statement {
                 condition.to_string().italic(),
                 ")".blue()
             ),
-            Statement::ActionExecution {
-                identifier,
-                parameters,
-            } => {
-                write!(formatter, "{}", "ActionExecution(".blue())?;
-                write!(formatter, "{}, ", identifier.italic())?;
-
-                write!(
-                    formatter,
-                    "[{}]",
-                    parameters
-                        .iter()
-                        .map(|p| p.to_string())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )?;
-
-                write!(formatter, "{}", ")".blue())
-            }
+            Statement::Expression { expression } => write!(
+                formatter,
+                "{}{}{}",
+                "Expression(".blue(),
+                expression.to_string().italic(),
+                ")".blue()
+            ),
         }
     }
 }
