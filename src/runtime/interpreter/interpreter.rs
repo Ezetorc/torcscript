@@ -44,6 +44,12 @@ impl Interpreter {
         match statement {
             Statement::Print { expression } => self.handle_print(&expression),
 
+            Statement::ForLoop {
+                iterator,
+                parameters,
+                statements,
+            } => self.handle_for_loop(iterator, parameters, statements),
+
             Statement::StateDeclaration {
                 identifier,
                 expression,
@@ -224,5 +230,42 @@ impl Interpreter {
             }
             _ => Ok(None),
         }
+    }
+
+    pub fn expect_parameters_amount(
+        parameters: &[String],
+        expected_amount: usize,
+    ) -> Result<(), LangError> {
+        if parameters.len() != expected_amount {
+            return Err(InterpreterError::InvalidAmount(format!(
+                "Expected {} parameters, got {}",
+                expected_amount,
+                parameters.len()
+            ))
+            .into());
+        }
+
+        Ok(())
+    }
+
+    pub fn execute_in_new_environment<Function>(
+        &mut self,
+        parent: Rc<RefCell<Environment>>,
+        function: Function,
+    ) -> Result<(), LangError>
+    where
+        Function: FnOnce(&mut Self) -> Result<(), LangError>,
+    {
+        let new_environment: Rc<RefCell<Environment>> =
+            Rc::new(RefCell::new(Environment::new_with_parent(parent)));
+        let previous_environment: Rc<RefCell<Environment>> = self.environment.clone();
+
+        self.environment = new_environment;
+
+        let result: Result<(), LangError> = function(self);
+
+        self.environment = previous_environment;
+
+        result
     }
 }

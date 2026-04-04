@@ -36,6 +36,37 @@ impl Value {
             _ => Err(InterpreterError::NotFound("Expected String".to_string()).into()),
         }
     }
+
+    pub fn as_iterable(&self) -> Result<Rc<RefCell<Vec<Value>>>, LangError> {
+        match self {
+            // ✅ Ya iterable
+            Value::List(items) => Ok(items.clone()),
+
+            Value::String(string) => {
+                let chars: Vec<Value> = string
+                    .chars()
+                    .map(|c| Value::String(c.to_string()))
+                    .collect();
+
+                Ok(Rc::new(RefCell::new(chars)))
+            }
+
+            Value::Number(n) => {
+                if *n < 0 {
+                    return Err(InterpreterError::TypeMismatch(
+                        "Cannot iterate negative number".into(),
+                    )
+                    .into());
+                }
+
+                let numbers: Vec<Value> = (1..=*n).map(|i| Value::Number(i)).collect();
+
+                Ok(Rc::new(RefCell::new(numbers)))
+            }
+
+            _ => Err(InterpreterError::TypeMismatch("Expected iterable".into()).into()),
+        }
+    }
 }
 
 impl PartialEq for Value {

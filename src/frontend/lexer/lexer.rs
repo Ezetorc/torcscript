@@ -71,6 +71,8 @@ impl Lexer {
             "and" => Some(Token::Operator(Operator::And)),
             "or" => Some(Token::Operator(Operator::Or)),
             "if" => Some(Token::Keyword(Keyword::If)),
+            "in" => Some(Token::Keyword(Keyword::In)),
+            "for" => Some(Token::Keyword(Keyword::For)),
             _ => None,
         }
     }

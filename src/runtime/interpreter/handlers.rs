@@ -2,9 +2,8 @@ use colored::Colorize;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    errors::{interpreter_error::InterpreterError, lang_error::LangError},
+    errors::lang_error::LangError,
     runtime::{
-        environment::Environment,
         interpreter::interpreter::Interpreter,
         program::{action::Action, expression::Expression, statement::Statement},
         value::value::Value,
@@ -44,36 +43,57 @@ impl Interpreter {
         action: Action,
         arguments: Vec<Value>,
     ) -> Result<Value, LangError> {
-        if action.parameters.len() != arguments.len() {
-            return Err(InterpreterError::InvalidAmount(format!(
-                "Expected {} arguments, got {}",
-                action.parameters.len(),
-                arguments.len()
-            ))
-            .into());
-        }
+        Interpreter::expect_parameters_amount(&action.parameters, arguments.len())?;
 
-        let new_environment: Rc<RefCell<Environment>> = Rc::new(RefCell::new(
-            Environment::new_with_parent(action.closure.clone()),
-        ));
+        self.execute_in_new_environment(action.closure.clone(), |interpreter| {
+            for (parameter, argument) in action.parameters.iter().zip(arguments.into_iter()) {
+                interpreter
+                    .environment
+                    .borrow_mut()
+                    .define(parameter.clone(), argument);
+            }
 
-        for (parameter, argument) in action.parameters.iter().zip(arguments.into_iter()) {
-            new_environment
-                .borrow_mut()
-                .define(parameter.clone(), argument);
-        }
+            for statement in action.statements {
+                interpreter.execute_statement(statement)?;
+            }
 
-        let previous_environment = self.environment.clone();
-
-        self.environment = new_environment;
-
-        for statement in action.statements {
-            self.execute_statement(statement)?;
-        }
-
-        self.environment = previous_environment;
+            Ok(())
+        })?;
 
         Ok(Value::None)
+    }
+
+    pub fn handle_for_loop(
+        &mut self,
+        iterator: Expression,
+        parameters: Vec<String>,
+        statements: Vec<Statement>,
+    ) -> Result<(), LangError> {
+        let value: Value = self.evaluate_expression(&iterator)?;
+        let items: Rc<RefCell<Vec<Value>>> = value.as_iterable()?;
+
+        Interpreter::expect_parameters_amount(&parameters, 1)?;
+
+        let parameter_name: &String = &parameters[0];
+
+        for item in items.borrow().iter() {
+            let item: Value = item.clone();
+
+            self.execute_in_new_environment(self.environment.clone(), |interpreter| {
+                interpreter
+                    .environment
+                    .borrow_mut()
+                    .define(parameter_name.clone(), item);
+
+                for statement in &statements {
+                    interpreter.execute_statement(statement.clone())?;
+                }
+
+                Ok(())
+            })?;
+        }
+
+        Ok(())
     }
 
     pub fn handle_conditional_statements(

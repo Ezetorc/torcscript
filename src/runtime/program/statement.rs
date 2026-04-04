@@ -22,6 +22,11 @@ pub enum Statement {
         statements: Vec<Statement>,
         else_statements: Option<Vec<Statement>>,
     },
+    ForLoop {
+        iterator: Expression,
+        parameters: Vec<String>,
+        statements: Vec<Statement>,
+    },
     Expression {
         expression: Expression,
     },
@@ -47,6 +52,17 @@ impl fmt::Display for Statement {
                 "StateDeclaration(".blue(),
                 identifier.italic(),
                 expression.to_string().italic(),
+                ")".blue()
+            ),
+            Statement::ForLoop {
+                iterator,
+                statements: _,
+                parameters: _,
+            } => write!(
+                formatter,
+                "{}{}{}",
+                "ForLoop(".blue(),
+                iterator.to_string().italic(),
                 ")".blue()
             ),
             Statement::ActionDeclaration {

@@ -55,6 +55,7 @@ impl Parser {
             Token::Keyword(Keyword::State) => Ok(Some(self.handle_state_declaration()?)),
             Token::Keyword(Keyword::Print) => Ok(Some(self.handle_print()?)),
             Token::Keyword(Keyword::If) => Ok(Some(self.handle_condition()?)),
+            Token::Keyword(Keyword::For) => Ok(Some(self.handle_for_loop()?)),
             Token::Commentary => {
                 self.handle_commentary();
                 Ok(None)
@@ -233,20 +234,20 @@ impl Parser {
     }
 
     pub fn parse_identifier(&mut self, error_message: &str) -> Result<String, LangError> {
-        match self.advance() {
+        let token: Token = self.advance();
+
+        println!("TOKEN {token}");
+
+        match token {
             Token::Identifier(identifier) => Ok(identifier),
             _ => Err(ParserError::InvalidSyntax(error_message.to_string()).into()),
         }
     }
 
     pub fn parse_parameters_identifiers(&mut self) -> Result<Vec<String>, LangError> {
+        self.advance_expecting(Token::Parenthesis(Side::Left))?;
+
         let mut parameters: Vec<String> = Vec::new();
-
-        if self.current_is(Token::Parenthesis(Side::Right)) {
-            self.advance();
-
-            return Ok(parameters);
-        }
 
         while !self.is_at_end() && !self.current_is(Token::Parenthesis(Side::Right)) {
             if self.current_is(Token::Comma) {

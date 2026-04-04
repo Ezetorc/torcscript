@@ -2,11 +2,13 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Keyword {
-    State,
     Action,
+    State,
     Print,
     Else,
+    For,
     If,
+    In,
 }
 
 impl fmt::Display for Keyword {
@@ -16,6 +18,8 @@ impl fmt::Display for Keyword {
             Keyword::Action => "Action",
             Keyword::Print => "Print",
             Keyword::Else => "Else",
+            Keyword::In => "In",
+            Keyword::For => "For",
             Keyword::If => "If",
         };
 

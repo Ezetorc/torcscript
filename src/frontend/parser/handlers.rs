@@ -74,6 +74,23 @@ impl Parser {
         });
     }
 
+    pub fn handle_for_loop(&mut self) -> Result<Statement, LangError> {
+        self.advance();
+
+        let parameters: Vec<String> = self.parse_parameters_identifiers()?;
+
+        self.advance_expecting(Token::Keyword(Keyword::In))?;
+
+        let iterator: Expression = self.parse_expression()?;
+        let statements: Vec<Statement> = self.parse_block()?;
+
+        Ok(Statement::ForLoop {
+            iterator,
+            parameters,
+            statements,
+        })
+    }
+
     pub fn handle_list(&mut self) -> Result<Expression, LangError> {
         self.advance_expecting(Token::Parenthesis(Side::Left))?;
 
