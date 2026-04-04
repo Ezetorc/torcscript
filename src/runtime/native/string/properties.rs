@@ -5,7 +5,7 @@ use crate::{
     runtime::{native::native_property::NativeProperty, value::value::Value},
 };
 
-pub fn get_list_properties() -> HashMap<&'static str, NativeProperty> {
+pub fn get_string_properties() -> HashMap<&'static str, NativeProperty> {
     let mut props: HashMap<&str, NativeProperty> = HashMap::new();
 
     props.insert("size", get_size);
@@ -15,13 +15,13 @@ pub fn get_list_properties() -> HashMap<&'static str, NativeProperty> {
 }
 
 fn get_size(value: Value) -> Result<Value, LangError> {
-    let list = value.as_list()?;
+    let string: String = value.as_string()?;
 
-    Ok(Value::Number(list.borrow().len() as i64))
+    Ok(Value::Number(string.len() as i64))
 }
 
 fn is_empty(value: Value) -> Result<Value, LangError> {
-    let list = value.as_list()?;
+    let string: String = value.as_string()?;
 
-    Ok(Value::Boolean(list.borrow().len() == 0))
+    Ok(Value::Boolean(string.len() == 0))
 }

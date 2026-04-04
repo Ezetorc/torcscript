@@ -1,12 +1,9 @@
 use crate::{
     errors::{lang_error::LangError, parser_error::ParserError},
-    frontend::{
-        abstract_syntax_tree::{expression::Expression, statement::Statement},
-        lexer::token::{
-            constructor::Constructor, keyword::Keyword, operator::Operator, side::Side,
-            token::Token,
-        },
+    frontend::lexer::token::{
+        constructor::Constructor, keyword::Keyword, operator::Operator, side::Side, token::Token,
     },
+    runtime::program::{expression::Expression, program::Program, statement::Statement},
 };
 
 pub struct Parser {
@@ -19,32 +16,35 @@ impl Parser {
         Self { tokens, current: 0 }
     }
 
-    pub fn parse(tokens: Vec<Token>) -> Result<Vec<Statement>, LangError> {
+    pub fn parse(tokens: Vec<Token>) -> Result<Program, LangError> {
         let mut parser: Parser = Parser::new(tokens);
-        parser.parse_program()
+
+        parser.parse_tokens()
     }
 
-    pub fn parse_program(&mut self) -> Result<Vec<Statement>, LangError> {
-        let mut abstract_syntax_tree: Vec<Statement> = Vec::new();
+    pub fn parse_tokens(&mut self) -> Result<Program, LangError> {
+        let mut program: Program = Program::new();
 
         while !self.is_at_end() {
             let current_token: Token = self.get_current_token();
 
-            if current_token == Token::EndOfLine {
-                self.advance();
-                continue;
-            } else if current_token == Token::EndOfFile {
-                break;
-            }
+            match current_token {
+                Token::EndOfFile => break,
+                Token::EndOfLine => {
+                    self.advance();
+                    continue;
+                }
+                _ => {
+                    let statement: Option<Statement> = self.parse_token()?;
 
-            let statement: Option<Statement> = self.parse_token()?;
-
-            if let Some(statement) = statement {
-                abstract_syntax_tree.push(statement);
+                    if let Some(statement) = statement {
+                        program.add(statement);
+                    }
+                }
             }
         }
 
-        Ok(abstract_syntax_tree)
+        Ok(program)
     }
 
     fn parse_token(&mut self) -> Result<Option<Statement>, LangError> {
@@ -60,9 +60,9 @@ impl Parser {
                 Ok(None)
             }
             Token::EndOfLine => Ok(None),
-
             _ => {
                 let expression: Expression = self.parse_expression()?;
+
                 Ok(Some(Statement::Expression { expression }))
             }
         }
@@ -73,7 +73,7 @@ impl Parser {
 
         let mut statements: Vec<Statement> = Vec::new();
 
-        while !self.is_at_end() && self.get_current_token() != Token::Bracket(Side::Right) {
+        while !self.is_at_end() && !self.current_is(Token::Bracket(Side::Right)) {
             let statement: Option<Statement> = self.parse_token()?;
 
             if let Some(statement) = statement {
@@ -89,16 +89,12 @@ impl Parser {
     }
 
     pub fn parse_expression(&mut self) -> Result<Expression, LangError> {
-        self.parse_assignment()
-    }
-
-    fn parse_assignment(&mut self) -> Result<Expression, LangError> {
         let left: Expression = self.parse_term()?;
 
-        if self.get_current_token() == Token::Operator(Operator::Equal) {
+        if self.current_is(Token::Operator(Operator::Equal)) {
             self.advance();
 
-            let value: Expression = self.parse_assignment()?;
+            let value: Expression = self.parse_expression()?;
 
             return Ok(Expression::Assignment {
                 target: Box::new(left),
@@ -115,6 +111,7 @@ impl Parser {
         while let Token::Operator(operator) = self.get_current_token() {
             if operator.is_binary() {
                 self.advance();
+
                 let right: Expression = self.parse_factor()?;
 
                 expression = Expression::Binary {
@@ -136,6 +133,7 @@ impl Parser {
         while let Token::Operator(operator) = self.get_current_token() {
             if operator.is_multiplicative() {
                 self.advance();
+
                 let right: Expression = self.parse_unary()?;
 
                 expression = Expression::Binary {
@@ -228,10 +226,8 @@ impl Parser {
         match token {
             Token::Literal(literal) => Ok(Expression::Literal(literal)),
             Token::Identifier(name) => Ok(Expression::Identifier(name)),
-            Token::Constructor(constructor) => match constructor {
-                Constructor::Object => Ok(self.handle_object()?),
-                Constructor::List => Ok(self.handle_list()?),
-            },
+            Token::Constructor(Constructor::Object) => Ok(self.handle_object()?),
+            Token::Constructor(Constructor::List) => Ok(self.handle_list()?),
             _ => Err(ParserError::NotFound(format!("Unexpected token '{token}'")).into()),
         }
     }
@@ -246,13 +242,14 @@ impl Parser {
     pub fn parse_parameters_identifiers(&mut self) -> Result<Vec<String>, LangError> {
         let mut parameters: Vec<String> = Vec::new();
 
-        if self.get_current_token() == Token::Parenthesis(Side::Right) {
+        if self.current_is(Token::Parenthesis(Side::Right)) {
             self.advance();
+
             return Ok(parameters);
         }
 
-        while !self.is_at_end() && self.get_current_token() != Token::Parenthesis(Side::Right) {
-            if self.get_current_token() == Token::Comma {
+        while !self.is_at_end() && !self.current_is(Token::Parenthesis(Side::Right)) {
+            if self.current_is(Token::Comma) {
                 self.advance();
             }
 
@@ -268,13 +265,13 @@ impl Parser {
     pub fn parse_arguments(&mut self) -> Result<Vec<Expression>, LangError> {
         let mut arguments: Vec<Expression> = Vec::new();
 
-        if self.get_current_token() == Token::Parenthesis(Side::Right) {
+        if self.current_is(Token::Parenthesis(Side::Right)) {
             self.advance();
             return Ok(arguments);
         }
 
-        while !self.is_at_end() && self.get_current_token() != Token::Parenthesis(Side::Right) {
-            if self.get_current_token() == Token::Comma {
+        while !self.is_at_end() && !self.current_is(Token::Parenthesis(Side::Right)) {
+            if self.current_is(Token::Comma) {
                 self.advance();
             }
 
@@ -321,7 +318,11 @@ impl Parser {
             .unwrap_or(Token::EndOfFile)
     }
 
+    pub fn current_is(&self, token: Token) -> bool {
+        self.get_current_token() == token
+    }
+
     pub fn is_at_end(&self) -> bool {
-        self.get_current_token() == Token::EndOfFile
+        self.current_is(Token::EndOfFile)
     }
 }

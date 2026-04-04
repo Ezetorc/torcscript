@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt;
 
 use crate::errors::lang_error::LangError;
 
@@ -14,8 +14,8 @@ impl From<ParserError> for LangError {
     }
 }
 
-impl Display for ParserError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for ParserError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidSyntax(error) | Self::NotFound(error) => {
                 write!(formatter, "{error}")

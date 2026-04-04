@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     errors::{lang_error::LangError, parser_error::ParserError},
     frontend::{
-        abstract_syntax_tree::{expression::Expression, statement::Statement},
         lexer::token::{keyword::Keyword, operator::Operator, side::Side, token::Token},
         parser::parser::Parser,
     },
+    runtime::program::{expression::Expression, statement::Statement},
 };
 
 impl Parser {
@@ -15,7 +15,7 @@ impl Parser {
 
         let expression: Expression = self.parse_expression()?;
 
-        if self.get_current_token() == Token::EndOfLine {
+        if self.current_is(Token::EndOfLine) {
             self.advance();
         }
 
@@ -45,33 +45,33 @@ impl Parser {
         let condition: Expression = self.parse_expression()?;
         let statements: Vec<Statement> = self.parse_block()?;
 
-        if self.get_current_token() == Token::Keyword(Keyword::Else) {
-            self.advance();
+        if !self.current_is(Token::Keyword(Keyword::Else)) {
+            return Ok(Statement::Conditional {
+                condition,
+                statements,
+                else_statements: None,
+            });
+        }
 
-            if self.get_current_token() == Token::Keyword(Keyword::If) {
-                let else_if_statement: Statement = self.handle_condition()?;
+        self.advance();
 
-                return Ok(Statement::Conditional {
-                    condition,
-                    statements,
-                    else_statements: Some(vec![else_if_statement]),
-                });
-            }
-
-            let else_statements: Vec<Statement> = self.parse_block()?;
+        if self.current_is(Token::Keyword(Keyword::If)) {
+            let else_if_statement: Statement = self.handle_condition()?;
 
             return Ok(Statement::Conditional {
                 condition,
                 statements,
-                else_statements: Some(else_statements),
+                else_statements: Some(vec![else_if_statement]),
             });
         }
 
-        Ok(Statement::Conditional {
+        let else_statements: Vec<Statement> = self.parse_block()?;
+
+        return Ok(Statement::Conditional {
             condition,
             statements,
-            else_statements: None,
-        })
+            else_statements: Some(else_statements),
+        });
     }
 
     pub fn handle_list(&mut self) -> Result<Expression, LangError> {
@@ -79,10 +79,10 @@ impl Parser {
 
         let mut elements: Vec<Expression> = Vec::new();
 
-        while self.get_current_token() != Token::Parenthesis(Side::Right) {
+        while !self.current_is(Token::Parenthesis(Side::Right)) {
             elements.push(self.parse_expression()?);
 
-            if self.get_current_token() == Token::Comma {
+            if self.current_is(Token::Comma) {
                 self.advance();
             }
         }
@@ -97,7 +97,7 @@ impl Parser {
 
         let mut fields: HashMap<String, Expression> = HashMap::new();
 
-        while !self.is_at_end() && self.get_current_token() != Token::Parenthesis(Side::Right) {
+        while !self.is_at_end() && !self.current_is(Token::Parenthesis(Side::Right)) {
             let token: Token = self.advance();
 
             let identifier: String = match token {
@@ -115,7 +115,7 @@ impl Parser {
             let expression: Expression = self.parse_expression()?;
             fields.insert(identifier, expression);
 
-            if self.get_current_token() == Token::Comma {
+            if self.current_is(Token::Comma) {
                 self.advance();
             }
         }
@@ -128,7 +128,7 @@ impl Parser {
     pub fn handle_commentary(&mut self) {
         self.advance();
 
-        while !self.is_at_end() && self.get_current_token() != Token::EndOfLine {
+        while !self.is_at_end() && !self.current_is(Token::EndOfLine) {
             self.advance();
         }
 

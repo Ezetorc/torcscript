@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt;
 
 use crate::errors::lang_error::LangError;
 
@@ -19,8 +19,8 @@ impl From<InterpreterError> for LangError {
     }
 }
 
-impl Display for InterpreterError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for InterpreterError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::TypeMismatch(error)
             | Self::NotFound(error)

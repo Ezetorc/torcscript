@@ -1,4 +1,4 @@
-use std::fmt::{Display, Result};
+use std::fmt;
 
 use colored::Colorize;
 
@@ -23,8 +23,8 @@ pub enum Token {
     Colon,
 }
 
-impl Display for Token {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result {
+impl fmt::Display for Token {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Token::Identifier(identifier) => write!(
                 formatter,
@@ -78,7 +78,7 @@ impl Display for Token {
 
             Token::EndOfLine => write!(formatter, "{}", "EndOfLine".bright_black()),
 
-            Token::EndOfFile => write!(formatter, "{}", "EndOfFile".bright_red()),
+            Token::EndOfFile => write!(formatter, "{}", "EndOfFile".black()),
 
             Token::Constructor(constructor) => write!(
                 formatter,

@@ -1,7 +1,7 @@
 use colored::Colorize;
-use std::fmt::{Display, Result};
+use std::fmt::{self};
 
-use crate::frontend::abstract_syntax_tree::expression::Expression;
+use crate::runtime::program::expression::Expression;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
@@ -27,8 +27,8 @@ pub enum Statement {
     },
 }
 
-impl Display for Statement {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result {
+impl fmt::Display for Statement {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Statement::Print { expression } => write!(
                 formatter,

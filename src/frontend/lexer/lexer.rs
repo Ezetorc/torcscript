@@ -56,21 +56,21 @@ impl Lexer {
 
     pub fn get_token_from(string: &str) -> Option<Token> {
         match string {
-            "false" | "False" => Some(Token::Literal(Literal::Boolean(false))),
-            "true" | "True" => Some(Token::Literal(Literal::Boolean(true))),
-            "none" | "None" => Some(Token::Literal(Literal::None)),
+            "Object" => Some(Token::Constructor(Constructor::Object)),
+            "False" => Some(Token::Literal(Literal::Boolean(false))),
+            "True" => Some(Token::Literal(Literal::Boolean(true))),
+            "List" => Some(Token::Constructor(Constructor::List)),
+            "isnt" => Some(Token::Operator(Operator::Difference)),
+            "not" => Some(Token::Operator(Operator::Negation)),
+            "is" => Some(Token::Operator(Operator::Equality)),
             "action" => Some(Token::Keyword(Keyword::Action)),
             "print" => Some(Token::Keyword(Keyword::Print)),
             "state" => Some(Token::Keyword(Keyword::State)),
+            "None" => Some(Token::Literal(Literal::None)),
             "else" => Some(Token::Keyword(Keyword::Else)),
-            "if" => Some(Token::Keyword(Keyword::If)),
-            "is" => Some(Token::Operator(Operator::Equality)),
-            "isnt" => Some(Token::Operator(Operator::Difference)),
-            "not" => Some(Token::Operator(Operator::Negation)),
             "and" => Some(Token::Operator(Operator::And)),
-            "Object" => Some(Token::Constructor(Constructor::Object)),
-            "List" => Some(Token::Constructor(Constructor::List)),
             "or" => Some(Token::Operator(Operator::Or)),
+            "if" => Some(Token::Keyword(Keyword::If)),
             _ => None,
         }
     }

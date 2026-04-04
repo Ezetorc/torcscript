@@ -1,8 +1,6 @@
 use std::{cell::RefCell, fmt, rc::Rc};
 
-use crate::{
-    frontend::abstract_syntax_tree::statement::Statement, runtime::environment::Environment,
-};
+use crate::runtime::{environment::Environment, program::statement::Statement};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Action {

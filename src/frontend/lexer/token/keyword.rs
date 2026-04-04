@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Keyword {
@@ -9,8 +9,8 @@ pub enum Keyword {
     If,
 }
 
-impl Display for Keyword {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Keyword {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let text = match self {
             Keyword::State => "State",
             Keyword::Action => "Action",

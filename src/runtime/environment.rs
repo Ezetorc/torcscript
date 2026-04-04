@@ -40,7 +40,7 @@ impl Environment {
             return parent.borrow_mut().assign(name, value);
         }
 
-        Err(InterpreterError::NotFound(format!("'{name}' not found")).into())
+        Err(InterpreterError::NotFound(format!("State '{name}' not found")).into())
     }
 
     pub fn get(&self, name: &str) -> Option<Value> {

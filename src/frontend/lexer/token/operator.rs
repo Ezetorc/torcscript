@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, Result};
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Operator {
@@ -40,8 +40,8 @@ impl Operator {
     }
 }
 
-impl Display for Operator {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> Result {
+impl fmt::Display for Operator {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Operator::Multiplication => write!(formatter, "*"),
             Operator::Substraction => write!(formatter, "-"),

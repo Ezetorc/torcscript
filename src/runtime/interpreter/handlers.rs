@@ -3,11 +3,11 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    frontend::abstract_syntax_tree::{
-        action::Action, expression::Expression, statement::Statement,
-    },
     runtime::{
-        environment::Environment, interpreter::interpreter::Interpreter, value::value::Value,
+        environment::Environment,
+        interpreter::interpreter::Interpreter,
+        program::{action::Action, expression::Expression, statement::Statement},
+        value::value::Value,
     },
 };
 

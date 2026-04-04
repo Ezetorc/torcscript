@@ -2,16 +2,15 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    frontend::{
-        abstract_syntax_tree::{expression::Expression, statement::Statement},
-        lexer::token::literal::Literal,
-    },
+    frontend::lexer::token::literal::Literal,
     runtime::{
         environment::Environment,
         native::{
             list::{methods::get_list_methods, properties::get_list_properties},
             native_method::NativeMethod,
+            string::{methods::get_string_methods, properties::get_string_properties},
         },
+        program::{expression::Expression, program::Program, statement::Statement},
         value::value::Value,
     },
 };
@@ -27,16 +26,17 @@ impl Interpreter {
         }
     }
 
-    pub fn execute(statements: Vec<Statement>) -> Result<(), LangError> {
+    pub fn execute(program: Program) -> Result<(), LangError> {
         let mut interpreter: Interpreter = Interpreter::new();
 
-        interpreter.execute_block(statements)
+        interpreter.execute_block(program.statements)
     }
 
     pub fn execute_block(&mut self, statements: Vec<Statement>) -> Result<(), LangError> {
         for statement in statements {
             self.execute_statement(statement)?;
         }
+
         Ok(())
     }
 
@@ -138,7 +138,8 @@ impl Interpreter {
                 property,
             } => {
                 let value: Value = self.evaluate_expression(expression)?;
-                let native_property = Interpreter::get_native_property(&value, property)?;
+                let native_property: Option<Value> =
+                    Interpreter::get_native_property(&value, property)?;
 
                 if let Some(native_property) = native_property {
                     return Ok(native_property);
@@ -162,7 +163,6 @@ impl Interpreter {
 
             Expression::Call { callee, arguments } => {
                 let callee_value: Value = self.evaluate_expression(callee)?;
-
                 let arguments: Vec<Value> = arguments
                     .iter()
                     .map(|arg| self.evaluate_expression(arg))
@@ -192,7 +192,7 @@ impl Interpreter {
                     }
 
                     _ => Err(InterpreterError::InvalidAssignment(format!(
-                        "'{target}' is not assigneable"
+                        "'{target}' is not assignable"
                     ))
                     .into()),
                 }
@@ -203,6 +203,7 @@ impl Interpreter {
     pub fn get_native_method(value: &Value, name: &str) -> Option<NativeMethod> {
         match value {
             Value::List(_) => get_list_methods().get(name).copied(),
+            Value::String(_) => get_string_methods().get(name).copied(),
             _ => None,
         }
     }
@@ -211,6 +212,12 @@ impl Interpreter {
         match value {
             Value::List(_) => {
                 if let Some(function) = get_list_properties().get(name) {
+                    return Ok(Some(function(value.clone())?));
+                }
+                Ok(None)
+            }
+            Value::String(_) => {
+                if let Some(function) = get_string_properties().get(name) {
                     return Ok(Some(function(value.clone())?));
                 }
                 Ok(None)

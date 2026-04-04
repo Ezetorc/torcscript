@@ -52,56 +52,55 @@ impl Lexer {
     }
 
     pub fn handle_symbol(&mut self) {
-        let current_char: char = self.get_current_char();
-        let next_char: Option<char> = self.get_next_char();
+        let current: char = self.get_current_char();
+        let next: Option<char> = self.get_next_char();
 
-        let token: Token = match (current_char, next_char) {
-            ('=', Some('=')) => {
-                self.advance();
-                self.advance();
-                Token::Operator(Operator::Equality)
-            }
-            ('!', Some('=')) => {
-                self.advance();
-                self.advance();
-                Token::Operator(Operator::Difference)
-            }
-            ('>', Some('=')) => {
-                self.advance();
-                self.advance();
-                Token::Operator(Operator::GreaterOrEqual)
-            }
-            ('<', Some('=')) => {
-                self.advance();
-                self.advance();
-                Token::Operator(Operator::LessOrEqual)
-            }
+        if let Some(token) = self.match_two_char_operator(current, next) {
+            self.advance();
+            self.advance();
+            self.add_token(token);
+            return;
+        }
 
-            _ => {
-                self.advance();
+        if let Some(token) = self.match_one_char_symbol(current) {
+            self.advance();
+            self.add_token(token);
+        }
+    }
 
-                match current_char {
-                    ')' => Token::Parenthesis(Side::Right),
-                    '(' => Token::Parenthesis(Side::Left),
-                    '}' => Token::Bracket(Side::Right),
-                    '{' => Token::Bracket(Side::Left),
-                    ';' => Token::EndOfLine,
-                    '+' => Token::Operator(Operator::Addition),
-                    '-' => Token::Operator(Operator::Substraction),
-                    '/' => Token::Operator(Operator::Division),
-                    '*' => Token::Operator(Operator::Multiplication),
-                    '>' => Token::Operator(Operator::Greater),
-                    '<' => Token::Operator(Operator::Less),
-                    '=' => Token::Operator(Operator::Equal),
-                    ',' => Token::Comma,
-                    '#' => Token::Commentary,
-                    ':' => Token::Colon,
-                    '.' => Token::Dot,
-                    _ => return,
-                }
-            }
-        };
+    fn match_two_char_operator(
+        &self,
+        current_char: char,
+        next_char: Option<char>,
+    ) -> Option<Token> {
+        match (current_char, next_char) {
+            ('=', Some('=')) => Some(Token::Operator(Operator::Equality)),
+            ('!', Some('=')) => Some(Token::Operator(Operator::Difference)),
+            ('>', Some('=')) => Some(Token::Operator(Operator::GreaterOrEqual)),
+            ('<', Some('=')) => Some(Token::Operator(Operator::LessOrEqual)),
+            _ => None,
+        }
+    }
 
-        self.add_token(token);
+    fn match_one_char_symbol(&self, current_char: char) -> Option<Token> {
+        Some(match current_char {
+            '*' => Token::Operator(Operator::Multiplication),
+            '-' => Token::Operator(Operator::Substraction),
+            '+' => Token::Operator(Operator::Addition),
+            '/' => Token::Operator(Operator::Division),
+            '>' => Token::Operator(Operator::Greater),
+            '=' => Token::Operator(Operator::Equal),
+            '<' => Token::Operator(Operator::Less),
+            ')' => Token::Parenthesis(Side::Right),
+            '(' => Token::Parenthesis(Side::Left),
+            '}' => Token::Bracket(Side::Right),
+            '{' => Token::Bracket(Side::Left),
+            '#' => Token::Commentary,
+            ';' => Token::EndOfLine,
+            ',' => Token::Comma,
+            ':' => Token::Colon,
+            '.' => Token::Dot,
+            _ => return None,
+        })
     }
 }

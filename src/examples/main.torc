@@ -1,11 +1,11 @@
-state my_list = List(123, 456, 789);
+state my_string = "juanSito";
 
-print my_list;
+print my_string.size;
 
-my_list.add(101112);
+print my_string.is_empty;
 
-print my_list;
+print my_string.in_uppercase().capitalize();
 
-my_list.remove(123);
+print my_string.in_lowercase().capitalize().size;
 
-print my_list;
+print my_string.capitalize();

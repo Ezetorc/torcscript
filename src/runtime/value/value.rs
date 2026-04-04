@@ -1,14 +1,10 @@
-use std::{
-    cell::RefCell,
-    collections::HashMap,
-    fmt::{Display, Formatter, Result},
-    rc::Rc,
-};
+use std::{cell::RefCell, collections::HashMap, fmt, rc::Rc};
 
 use colored::Colorize;
 
 use crate::{
-    frontend::abstract_syntax_tree::action::Action, runtime::native::native_method::NativeMethod,
+    errors::{interpreter_error::InterpreterError, lang_error::LangError},
+    runtime::{native::native_method::NativeMethod, program::action::Action},
 };
 
 #[derive(Debug, Clone)]
@@ -24,6 +20,22 @@ pub enum Value {
         method: NativeMethod,
     },
     None,
+}
+
+impl Value {
+    pub fn as_list(&self) -> Result<Rc<RefCell<Vec<Value>>>, LangError> {
+        match self {
+            Value::List(list) => Ok(list.clone()),
+            _ => Err(InterpreterError::NotFound("Expected List".to_string()).into()),
+        }
+    }
+
+    pub fn as_string(&self) -> Result<String, LangError> {
+        match self {
+            Value::String(string) => Ok(string.clone()),
+            _ => Err(InterpreterError::NotFound("Expected String".to_string()).into()),
+        }
+    }
 }
 
 impl PartialEq for Value {
@@ -56,8 +68,8 @@ impl PartialEq for Value {
     }
 }
 
-impl Display for Value {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> Result {
+impl fmt::Display for Value {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Value::String(string) => write!(formatter, "'{string}'"),
             Value::Number(number) => write!(formatter, "{number}"),

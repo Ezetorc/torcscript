@@ -1,4 +1,7 @@
-use std::{collections::HashMap, fmt::Display};
+use std::{
+    collections::HashMap,
+    fmt::{self},
+};
 
 use crate::frontend::lexer::token::{literal::Literal, operator::Operator};
 
@@ -31,15 +34,19 @@ pub enum Expression {
     },
 }
 
-impl Display for Expression {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Expression {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Expression::Literal(literal) => write!(formatter, "{literal}"),
             Expression::List(list) => {
-                write!(formatter, "[List]:")?;
+                write!(formatter, "[List]: ")?;
 
-                for expression in list {
-                    write!(formatter, "{expression}")?;
+                for (index, expression) in list.iter().enumerate() {
+                    if index == list.len() - 1 {
+                        write!(formatter, "{expression}")?;
+                    } else {
+                        write!(formatter, "{expression}, ")?;
+                    }
                 }
 
                 Ok(())
@@ -48,8 +55,8 @@ impl Display for Expression {
                 write!(formatter, "[Assigment]: ({target}) = ({expression})")
             }
             Expression::Call {
-                callee: _callee,
-                arguments: _arguments,
+                callee: _,
+                arguments: _,
             } => write!(formatter, "[Call]"),
             Expression::Member {
                 expression,
@@ -70,7 +77,7 @@ impl Display for Expression {
 
                 Ok(())
             }
-            Expression::Identifier(identifier) => write!(formatter, "{identifier}"),
+            Expression::Identifier(identifier) => write!(formatter, "[Identifier]: {identifier}"),
             Expression::Binary {
                 left,
                 operator,
