@@ -1,4 +1,3 @@
-````markdown
 # ⚙️ TorcScript
 
 > A human-readable, general-purpose interpreted programming language written in Rust.
@@ -177,4 +176,3 @@ If you want, I can also generate:
 - a **logo concept 🎨**
 - a **GitHub repo structure 📁**
 - or a **landing page for TorcScript 🌐**
-```
