@@ -39,7 +39,6 @@ impl Value {
 
     pub fn as_iterable(&self) -> Result<Rc<RefCell<Vec<Value>>>, LangError> {
         match self {
-            // ✅ Ya iterable
             Value::List(items) => Ok(items.clone()),
 
             Value::String(string) => {
@@ -102,9 +101,12 @@ impl PartialEq for Value {
 impl fmt::Display for Value {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Value::String(string) => write!(formatter, "'{string}'"),
+            Value::String(string) => write!(formatter, "{string}"),
             Value::Number(number) => write!(formatter, "{number}"),
-            Value::Boolean(boolean) => write!(formatter, "{boolean}"),
+            Value::Boolean(boolean) => match boolean {
+                true => write!(formatter, "True"),
+                false => write!(formatter, "False"),
+            },
             Value::Action(action) => write!(formatter, "{action}"),
             Value::BoundMethod {
                 receiver: _,

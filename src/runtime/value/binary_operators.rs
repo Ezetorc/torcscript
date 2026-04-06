@@ -10,82 +10,88 @@ impl Value {
         operator: &Operator,
         right: Value,
     ) -> Result<Value, LangError> {
+        match operator {
+            Operator::Addition => self.add(right),
+            Operator::Substraction => self.substract(right),
+            Operator::Multiplication => self.multiplicate(right),
+            Operator::Division => self.divide(right),
+            Operator::Equality => self.equals_op(right),
+            Operator::Difference => self.difference(right),
+            Operator::And => self.and(right),
+            Operator::Or => self.or(right),
+            _ => Err(
+                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
+            ),
+        }
+    }
+
+    fn add(self, right: Value) -> Result<Value, LangError> {
         match (self, right) {
-            (Value::Number(left), Value::Number(right)) => {
-                Value::apply_binary_number_operator(left, operator, right)
-            }
-
-            (Value::String(left), Value::String(right)) => {
-                Value::apply_binary_string_operator(left, operator, right)
-            }
-
-            (Value::Boolean(left), Value::Boolean(right)) => {
-                Value::apply_binary_boolean_operator(left, operator, right)
-            }
-
-            _ => Err(LangError::Interpreter(InterpreterError::TypeMismatch(
-                "Invalid operands".into(),
+            (Value::Number(left), Value::Number(right)) => Ok(Value::Number(left + right)),
+            (left, right) => Ok(Value::String(format!(
+                "{}{}",
+                left.to_string(),
+                right.to_string()
             ))),
         }
     }
 
-    pub fn apply_binary_boolean_operator(
-        left: bool,
-        operator: &Operator,
-        right: bool,
-    ) -> Result<Value, LangError> {
-        match operator {
-            Operator::And => Ok(Value::Boolean(left && right)),
-            Operator::Or => Ok(Value::Boolean(left || right)),
-            _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
-            ),
+    fn substract(self, right: Value) -> Result<Value, LangError> {
+        match (self, right) {
+            (Value::Number(left), Value::Number(right)) => Ok(Value::Number(left - right)),
+            _ => Err(type_error()),
         }
     }
 
-    pub fn apply_binary_string_operator(
-        left: String,
-        operator: &Operator,
-        right: String,
-    ) -> Result<Value, LangError> {
-        match operator {
-            Operator::Addition => Ok(Value::String(format!("{left}{right}"))),
-            Operator::Equality => Ok(Value::Boolean(left == right)),
-            Operator::Difference => Ok(Value::Boolean(left != right)),
-            _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
-            ),
+    fn multiplicate(self, right: Value) -> Result<Value, LangError> {
+        match (self, right) {
+            (Value::Number(left), Value::Number(right)) => Ok(Value::Number(left * right)),
+            _ => Err(type_error()),
         }
     }
 
-    fn apply_binary_number_operator(
-        left: i64,
-        operator: &Operator,
-        right: i64,
-    ) -> Result<Value, LangError> {
-        match operator {
-            Operator::Addition => Ok(Value::Number(left + right)),
-            Operator::Substraction => Ok(Value::Number(left - right)),
-            Operator::Multiplication => Ok(Value::Number(left * right)),
-            Operator::Equality => Ok(Value::Boolean(left == right)),
-            Operator::Difference => Ok(Value::Boolean(left != right)),
-            Operator::Greater => Ok(Value::Boolean(left > right)),
-            Operator::GreaterOrEqual => Ok(Value::Boolean(left >= right)),
-            Operator::Less => Ok(Value::Boolean(left < right)),
-            Operator::LessOrEqual => Ok(Value::Boolean(left <= right)),
-            Operator::Division => {
-                if right == 0 {
-                    return Err(InterpreterError::DivisionByZero(format!(
-                        "Attempted to divide {left} by 0"
-                    ))
-                    .into());
-                } else {
-                    Ok(Value::Number(left / right))
-                }
+    fn divide(self, right: Value) -> Result<Value, LangError> {
+        match (self, right) {
+            (Value::Number(_), Value::Number(0)) => {
+                Err(InterpreterError::DivisionByZero("Division by zero".into()).into())
             }
-            _ => Err(
-                InterpreterError::InvalidOperator(format!("Invalid operator '{operator}'")).into(),
-            ),
+            (Value::Number(left), Value::Number(right)) => Ok(Value::Number(left / right)),
+            _ => Err(type_error()),
         }
     }
+
+    fn equals_op(self, right: Value) -> Result<Value, LangError> {
+        Ok(Value::Boolean(self.equals(&right)))
+    }
+
+    fn difference(self, right: Value) -> Result<Value, LangError> {
+        Ok(Value::Boolean(!self.equals(&right)))
+    }
+
+    fn and(self, right: Value) -> Result<Value, LangError> {
+        match (self, right) {
+            (Value::Boolean(left), Value::Boolean(right)) => Ok(Value::Boolean(left && right)),
+            _ => Err(type_error()),
+        }
+    }
+
+    fn or(self, right: Value) -> Result<Value, LangError> {
+        match (self, right) {
+            (Value::Boolean(left), Value::Boolean(right)) => Ok(Value::Boolean(left || right)),
+            _ => Err(type_error()),
+        }
+    }
+
+    pub fn equals(&self, other: &Value) -> bool {
+        match (self, other) {
+            (Value::Number(a), Value::Number(b)) => a == b,
+            (Value::String(a), Value::String(b)) => a == b,
+            (Value::Boolean(a), Value::Boolean(b)) => a == b,
+            _ => false,
+        }
+    }
+}
+
+fn type_error() -> LangError {
+    InterpreterError::InvalidOperator("Invalid operands".to_string()).into()
 }
