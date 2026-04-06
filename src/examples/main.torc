@@ -8,6 +8,6 @@ action print_person(person) {
 
 print_person(juan);
 
-for (fruit) in juan.favourite_fruits {
-    print "Favourite fruit: " + fruit;
+for (fruit, index) in juan.favourite_fruits {
+    print String(index) + " Favourite fruit: " + fruit;
 }

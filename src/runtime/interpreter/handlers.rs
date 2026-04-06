@@ -2,7 +2,7 @@ use colored::Colorize;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    errors::lang_error::LangError,
+    errors::{interpreter_error::InterpreterError, lang_error::LangError},
     runtime::{
         interpreter::interpreter::Interpreter,
         program::{action::Action, expression::Expression, statement::Statement},
@@ -72,18 +72,32 @@ impl Interpreter {
         let value: Value = self.evaluate_expression(&iterator)?;
         let items: Rc<RefCell<Vec<Value>>> = value.as_iterable()?;
 
-        Interpreter::expect_parameters_amount(&parameters, 1)?;
+        if parameters.len() > 2 || parameters.len() == 0 {
+            return Err(InterpreterError::InvalidAmount(format!(
+                "Expected 1 or 2 parameters, got {}",
+                parameters.len()
+            ))
+            .into());
+        }
 
-        let parameter_name: &String = &parameters[0];
+        let item_parameter_name: &String = &parameters[0];
+        let index_parameter_name: Option<&String> = parameters.get(1);
 
-        for item in items.borrow().iter() {
+        for (index, item) in items.borrow().iter().enumerate() {
             let item: Value = item.clone();
 
             self.execute_in_new_environment(self.environment.clone(), |interpreter| {
                 interpreter
                     .environment
                     .borrow_mut()
-                    .define(parameter_name.clone(), item);
+                    .define(item_parameter_name.clone(), item);
+
+                if let Some(index_name) = index_parameter_name {
+                    interpreter
+                        .environment
+                        .borrow_mut()
+                        .define(index_name.clone(), Value::Number(index as i64));
+                }
 
                 for statement in &statements {
                     interpreter.execute_statement(statement.clone())?;
