@@ -32,6 +32,3 @@ fn run() -> Result<(), LangError> {
 
     Ok(())
 }
-
-// Boolean() constructor
-// print_named variable -> "nombre de variable: {variable}"

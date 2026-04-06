@@ -22,6 +22,27 @@ impl Parser {
         Ok(Statement::Print { expression })
     }
 
+    pub fn handle_print_named(&mut self) -> Result<Statement, LangError> {
+        self.advance();
+
+        let expression: Expression = self.parse_expression()?;
+
+        if self.current_is(Token::EndOfLine) {
+            self.advance();
+        }
+
+        match &expression {
+            Expression::Identifier(identifier) => Ok(Statement::PrintNamed {
+                name: identifier.clone(),
+                expression,
+            }),
+            _ => Err(ParserError::InvalidSyntax(
+                "'print_named' can be only used with identifiers".to_string(),
+            )
+            .into()),
+        }
+    }
+
     pub fn handle_function_declaration(&mut self) -> Result<Statement, LangError> {
         self.advance();
 

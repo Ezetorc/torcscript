@@ -44,6 +44,10 @@ impl Interpreter {
         match statement {
             Statement::Print { expression } => self.handle_print(&expression),
 
+            Statement::PrintNamed { name, expression } => {
+                self.handle_print_named(name, &expression)
+            }
+
             Statement::ForLoop {
                 iterator,
                 parameters,

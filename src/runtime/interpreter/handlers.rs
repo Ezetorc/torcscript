@@ -19,6 +19,18 @@ impl Interpreter {
         Ok(())
     }
 
+    pub fn handle_print_named(
+        &mut self,
+        name: String,
+        expression: &Expression,
+    ) -> Result<(), LangError> {
+        let value: Value = self.evaluate_expression(expression)?;
+
+        println!("{} {name}: {value}", ">".green());
+
+        Ok(())
+    }
+
     pub fn handle_action_declaration(
         &mut self,
         identifier: String,

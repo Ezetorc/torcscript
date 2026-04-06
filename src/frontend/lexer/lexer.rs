@@ -66,6 +66,7 @@ impl Lexer {
             "is" => Some(Token::Operator(Operator::Equality)),
             "action" => Some(Token::Keyword(Keyword::Function)),
             "print" => Some(Token::Keyword(Keyword::Print)),
+            "print_named" => Some(Token::Keyword(Keyword::PrintNamed)),
             "state" => Some(Token::Keyword(Keyword::Variable)),
             "fact" => Some(Token::Keyword(Keyword::Constant)),
             "None" => Some(Token::Literal(Literal::None)),

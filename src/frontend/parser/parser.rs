@@ -54,6 +54,7 @@ impl Parser {
             Token::Keyword(Keyword::Function) => Ok(Some(self.handle_function_declaration()?)),
             Token::Keyword(Keyword::Variable) => Ok(Some(self.handle_variable_declaration()?)),
             Token::Keyword(Keyword::Print) => Ok(Some(self.handle_print()?)),
+            Token::Keyword(Keyword::PrintNamed) => Ok(Some(self.handle_print_named()?)),
             Token::Keyword(Keyword::Constant) => Ok(Some(self.handle_constant_declaration()?)),
             Token::Keyword(Keyword::If) => Ok(Some(self.handle_condition()?)),
             Token::Keyword(Keyword::For) => Ok(Some(self.handle_for_loop()?)),

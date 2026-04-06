@@ -8,6 +8,10 @@ pub enum Statement {
     Print {
         expression: Expression,
     },
+    PrintNamed {
+        name: String,
+        expression: Expression,
+    },
     VariableDeclaration {
         identifier: String,
         expression: Expression,
@@ -43,6 +47,15 @@ impl fmt::Display for Statement {
                 formatter,
                 "{}{}{}",
                 "Print(".blue(),
+                expression.to_string().italic(),
+                ")".blue()
+            ),
+
+            Statement::PrintNamed { name, expression } => write!(
+                formatter,
+                "{}{}, {}{}",
+                "PrintNamed(".blue(),
+                name.to_string().italic(),
                 expression.to_string().italic(),
                 ")".blue()
             ),
