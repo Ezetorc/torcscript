@@ -10,6 +10,7 @@ pub enum Expression {
     Identifier(String),
     Literal(Literal),
     List(Vec<Expression>),
+    String(Box<Expression>),
     Object(HashMap<String, Expression>),
     Assignment {
         target: Box<Expression>,
@@ -58,6 +59,7 @@ impl fmt::Display for Expression {
                 callee: _,
                 arguments: _,
             } => write!(formatter, "[Call]"),
+            Expression::String(expression) => write!(formatter, "String({expression})"),
             Expression::Member {
                 expression,
                 property,

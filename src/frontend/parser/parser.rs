@@ -229,14 +229,13 @@ impl Parser {
             Token::Identifier(name) => Ok(Expression::Identifier(name)),
             Token::Constructor(Constructor::Object) => Ok(self.handle_object()?),
             Token::Constructor(Constructor::List) => Ok(self.handle_list()?),
+            Token::Constructor(Constructor::String) => Ok(self.handle_string()?),
             _ => Err(ParserError::NotFound(format!("Unexpected token '{token}'")).into()),
         }
     }
 
     pub fn parse_identifier(&mut self, error_message: &str) -> Result<String, LangError> {
         let token: Token = self.advance();
-
-        println!("TOKEN {token}");
 
         match token {
             Token::Identifier(identifier) => Ok(identifier),

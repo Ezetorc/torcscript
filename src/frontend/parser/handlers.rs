@@ -109,6 +109,16 @@ impl Parser {
         Ok(Expression::List(elements))
     }
 
+    pub fn handle_string(&mut self) -> Result<Expression, LangError> {
+        self.advance_expecting(Token::Parenthesis(Side::Left))?;
+
+        let expression: Expression = self.parse_expression()?;
+
+        self.advance_expecting(Token::Parenthesis(Side::Right))?;
+
+        Ok(Expression::String(Box::new(expression)))
+    }
+
     pub fn handle_object(&mut self) -> Result<Expression, LangError> {
         self.advance_expecting(Token::Parenthesis(Side::Left))?;
 

@@ -83,6 +83,12 @@ impl Interpreter {
                 Literal::None => Ok(Value::None),
             },
 
+            Expression::String(expression) => {
+                let value: Value = self.evaluate_expression(expression)?;
+
+                Ok(Value::String(value.to_string()))
+            }
+
             Expression::List(list) => {
                 let mut list_values: Vec<Value> = Vec::new();
 

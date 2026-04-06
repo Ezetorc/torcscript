@@ -32,3 +32,7 @@ fn run() -> Result<(), LangError> {
 
     Ok(())
 }
+
+// for (item) in 5 {
+//     print "Item: " + String(item);
+// }

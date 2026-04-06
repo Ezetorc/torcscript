@@ -4,6 +4,7 @@ use std::fmt;
 pub enum Constructor {
     List,
     Object,
+    String,
 }
 
 impl fmt::Display for Constructor {
@@ -11,6 +12,7 @@ impl fmt::Display for Constructor {
         match self {
             Constructor::List => write!(formatter, "List"),
             Constructor::Object => write!(formatter, "Object"),
+            Constructor::String => write!(formatter, "String"),
         }
     }
 }

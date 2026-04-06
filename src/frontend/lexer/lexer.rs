@@ -57,6 +57,7 @@ impl Lexer {
     pub fn get_token_from(string: &str) -> Option<Token> {
         match string {
             "Object" => Some(Token::Constructor(Constructor::Object)),
+            "String" => Some(Token::Constructor(Constructor::String)),
             "False" => Some(Token::Literal(Literal::Boolean(false))),
             "True" => Some(Token::Literal(Literal::Boolean(true))),
             "List" => Some(Token::Constructor(Constructor::List)),
