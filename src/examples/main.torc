@@ -1,0 +1,13 @@
+state my_name = "Juan";
+state favourite_fruits = List("apple", "banana", "grapes");
+state juan = Object(name: my_name, age: 15, favourite_fruits: favourite_fruits);
+
+action print_person(person) {
+    print person.name + " is " + String(person.age) + " years old";
+}
+
+print_person(juan);
+
+for (fruit) in juan.favourite_fruits {
+    print "Favourite fruit: " + fruit;
+}

@@ -26,9 +26,6 @@ impl Parser {
         self.advance();
 
         let identifier: String = self.parse_identifier("Expected action identifier")?;
-
-        self.advance_expecting(Token::Parenthesis(Side::Left))?;
-
         let parameters: Vec<String> = self.parse_parameters_identifiers()?;
         let statements: Vec<Statement> = self.parse_block()?;
 
