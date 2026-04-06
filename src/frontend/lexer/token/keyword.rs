@@ -2,8 +2,9 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Keyword {
-    Action,
-    State,
+    Function,
+    Constant,
+    Variable,
     Print,
     Else,
     For,
@@ -14,13 +15,14 @@ pub enum Keyword {
 impl fmt::Display for Keyword {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let text = match self {
-            Keyword::State => "State",
-            Keyword::Action => "Action",
+            Keyword::Variable => "State",
+            Keyword::Function => "Action",
             Keyword::Print => "Print",
             Keyword::Else => "Else",
             Keyword::In => "In",
             Keyword::For => "For",
             Keyword::If => "If",
+            Keyword::Constant => "Fact",
         };
 
         write!(formatter, "{text}")

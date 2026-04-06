@@ -51,9 +51,10 @@ impl Parser {
         let token: Token = self.get_current_token();
 
         match token {
-            Token::Keyword(Keyword::Action) => Ok(Some(self.handle_action_declaration()?)),
-            Token::Keyword(Keyword::State) => Ok(Some(self.handle_state_declaration()?)),
+            Token::Keyword(Keyword::Function) => Ok(Some(self.handle_function_declaration()?)),
+            Token::Keyword(Keyword::Variable) => Ok(Some(self.handle_variable_declaration()?)),
             Token::Keyword(Keyword::Print) => Ok(Some(self.handle_print()?)),
+            Token::Keyword(Keyword::Constant) => Ok(Some(self.handle_constant_declaration()?)),
             Token::Keyword(Keyword::If) => Ok(Some(self.handle_condition()?)),
             Token::Keyword(Keyword::For) => Ok(Some(self.handle_for_loop()?)),
             Token::Commentary => {

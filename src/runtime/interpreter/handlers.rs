@@ -5,7 +5,7 @@ use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
     runtime::{
         interpreter::interpreter::Interpreter,
-        program::{action::Action, expression::Expression, statement::Statement},
+        program::{expression::Expression, function::Function, statement::Statement},
         value::value::Value,
     },
 };
@@ -25,7 +25,7 @@ impl Interpreter {
         parameters: Vec<String>,
         statements: Vec<Statement>,
     ) -> Result<(), LangError> {
-        let action: Value = Value::Action(Action {
+        let function: Value = Value::Function(Function {
             parameters,
             statements,
             closure: self.environment.clone(),
@@ -33,27 +33,27 @@ impl Interpreter {
 
         self.environment
             .borrow_mut()
-            .define(identifier.clone(), action);
+            .define_constant(identifier.clone(), function);
 
         Ok(())
     }
 
-    pub fn handle_action_execution(
+    pub fn handle_function_execution(
         &mut self,
-        action: Action,
+        function: Function,
         arguments: Vec<Value>,
     ) -> Result<Value, LangError> {
-        Interpreter::expect_parameters_amount(&action.parameters, arguments.len())?;
+        Interpreter::expect_parameters_amount(&function.parameters, arguments.len())?;
 
-        self.execute_in_new_environment(action.closure.clone(), |interpreter| {
-            for (parameter, argument) in action.parameters.iter().zip(arguments.into_iter()) {
+        self.execute_in_new_environment(function.closure.clone(), |interpreter| {
+            for (parameter, argument) in function.parameters.iter().zip(arguments.into_iter()) {
                 interpreter
                     .environment
                     .borrow_mut()
-                    .define(parameter.clone(), argument);
+                    .define_constant(parameter.clone(), argument);
             }
 
-            for statement in action.statements {
+            for statement in function.statements {
                 interpreter.execute_statement(statement)?;
             }
 
@@ -90,13 +90,13 @@ impl Interpreter {
                 interpreter
                     .environment
                     .borrow_mut()
-                    .define(item_parameter_name.clone(), item);
+                    .define_constant(item_parameter_name.clone(), item);
 
                 if let Some(index_name) = index_parameter_name {
                     interpreter
                         .environment
                         .borrow_mut()
-                        .define(index_name.clone(), Value::Number(index as i64));
+                        .define_constant(index_name.clone(), Value::Number(index as i64));
                 }
 
                 for statement in &statements {
@@ -144,7 +144,23 @@ impl Interpreter {
     ) -> Result<(), LangError> {
         let value: Value = self.evaluate_expression(&expression)?;
 
-        self.environment.borrow_mut().define(identifier, value);
+        self.environment
+            .borrow_mut()
+            .define_variable(identifier, value);
+
+        Ok(())
+    }
+
+    pub fn handle_constant_declaration(
+        &mut self,
+        identifier: String,
+        expression: Expression,
+    ) -> Result<(), LangError> {
+        let value: Value = self.evaluate_expression(&expression)?;
+
+        self.environment
+            .borrow_mut()
+            .define_constant(identifier, value);
 
         Ok(())
     }

@@ -4,7 +4,7 @@ use colored::Colorize;
 
 use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    runtime::{native::native_method::NativeMethod, program::action::Action},
+    runtime::{native::native_method::NativeMethod, program::function::Function},
 };
 
 #[derive(Debug, Clone)]
@@ -14,7 +14,7 @@ pub enum Value {
     Boolean(bool),
     List(Rc<RefCell<Vec<Value>>>),
     Object(Rc<RefCell<HashMap<String, Value>>>),
-    Action(Action),
+    Function(Function),
     BoundMethod {
         receiver: Box<Value>,
         method: NativeMethod,
@@ -107,7 +107,7 @@ impl fmt::Display for Value {
                 true => write!(formatter, "True"),
                 false => write!(formatter, "False"),
             },
-            Value::Action(action) => write!(formatter, "{action}"),
+            Value::Function(function) => write!(formatter, "{function}"),
             Value::BoundMethod {
                 receiver: _,
                 method: _,

@@ -1,2 +1,11 @@
-print 16 + " hola" + True;
-print "chau: " + 17;
+state my_name = "hola";
+fact PI = 3;
+
+print "my_name: " + my_name;
+print "PI: " + PI;
+
+my_name = "valor cambiado";
+PI = "nuevo PI";
+
+print "my_name: " + my_name;
+print "PI: " + PI;

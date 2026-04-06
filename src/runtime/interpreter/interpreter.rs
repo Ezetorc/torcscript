@@ -4,7 +4,7 @@ use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
     frontend::lexer::token::literal::Literal,
     runtime::{
-        environment::Environment,
+        environment::{environment::Environment, environment_value::EnvironmentValue},
         native::{
             list::{methods::get_list_methods, properties::get_list_properties},
             native_method::NativeMethod,
@@ -50,10 +50,15 @@ impl Interpreter {
                 statements,
             } => self.handle_for_loop(iterator, parameters, statements),
 
-            Statement::StateDeclaration {
+            Statement::VariableDeclaration {
                 identifier,
                 expression,
             } => self.handle_state_declaration(identifier, expression),
+
+            Statement::ConstantDeclaration {
+                identifier,
+                expression,
+            } => self.handle_constant_declaration(identifier, expression),
 
             Statement::Conditional {
                 condition,
@@ -61,7 +66,7 @@ impl Interpreter {
                 else_statements,
             } => self.handle_conditional_statements(condition, statements, else_statements),
 
-            Statement::ActionDeclaration {
+            Statement::FunctionDeclaration {
                 identifier,
                 parameters,
                 statements,
@@ -134,10 +139,11 @@ impl Interpreter {
             }
 
             Expression::Identifier(identifier) => {
-                let value: Option<Value> = self.environment.borrow().get(identifier);
+                let environment_value: Option<EnvironmentValue> =
+                    self.environment.borrow().get(identifier);
 
-                if let Some(value) = value {
-                    return Ok(value.clone());
+                if let Some(environment_value) = environment_value {
+                    return Ok(environment_value.value);
                 } else {
                     return Err(
                         InterpreterError::NotFound(format!("'{identifier}' not found")).into(),
@@ -183,7 +189,9 @@ impl Interpreter {
                 match callee_value {
                     Value::BoundMethod { receiver, method } => method(*receiver, arguments),
 
-                    Value::Action(action) => self.handle_action_execution(action, arguments),
+                    Value::Function(function) => {
+                        self.handle_function_execution(function, arguments)
+                    }
 
                     _ => Err(InterpreterError::NotCallable(format!(
                         "'{callee_value}' is not callable"
@@ -196,11 +204,27 @@ impl Interpreter {
 
                 match &**target {
                     Expression::Identifier(name) => {
-                        self.environment
-                            .borrow_mut()
-                            .assign(name.clone(), value.clone())?;
+                        let environment_value: Option<EnvironmentValue> =
+                            self.environment.borrow_mut().get(name);
 
-                        Ok(value)
+                        if let Some(environment_value) = environment_value {
+                            if environment_value.is_mutable {
+                                self.environment
+                                    .borrow_mut()
+                                    .assign(name.clone(), value.clone())?;
+
+                                Ok(environment_value.value)
+                            } else {
+                                return Err(InterpreterError::InvalidAssignment(format!(
+                                    "Cannot assign '{name}' because is a fact (immutable)"
+                                ))
+                                .into());
+                            }
+                        } else {
+                            return Err(
+                                InterpreterError::NotFound(format!("'{name}' not found")).into()
+                            );
+                        }
                     }
 
                     _ => Err(InterpreterError::InvalidAssignment(format!(

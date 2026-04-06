@@ -2,12 +2,12 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    runtime::value::value::Value,
+    runtime::{environment::environment_value::EnvironmentValue, value::value::Value},
 };
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Environment {
-    pub values: HashMap<String, Value>,
+    pub values: HashMap<String, EnvironmentValue>,
     parent: Option<Rc<RefCell<Environment>>>,
 }
 
@@ -26,13 +26,17 @@ impl Environment {
         }
     }
 
-    pub fn define(&mut self, name: String, value: Value) {
-        self.values.insert(name, value);
+    pub fn define_variable(&mut self, name: String, value: Value) {
+        self.values.insert(name, EnvironmentValue::mutable(value));
+    }
+
+    pub fn define_constant(&mut self, name: String, value: Value) {
+        self.values.insert(name, EnvironmentValue::immutable(value));
     }
 
     pub fn assign(&mut self, name: String, value: Value) -> Result<(), LangError> {
         if self.values.contains_key(&name) {
-            self.values.insert(name, value);
+            self.values.insert(name, EnvironmentValue::mutable(value));
             return Ok(());
         }
 
@@ -43,9 +47,9 @@ impl Environment {
         Err(InterpreterError::NotFound(format!("State '{name}' not found")).into())
     }
 
-    pub fn get(&self, name: &str) -> Option<Value> {
-        if let Some(value) = self.values.get(name) {
-            return Some(value.clone());
+    pub fn get(&self, name: &str) -> Option<EnvironmentValue> {
+        if let Some(environment_value) = self.values.get(name) {
+            return Some(environment_value.clone());
         }
 
         if let Some(parent) = &self.parent {

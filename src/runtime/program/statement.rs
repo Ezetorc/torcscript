@@ -8,11 +8,15 @@ pub enum Statement {
     Print {
         expression: Expression,
     },
-    StateDeclaration {
+    VariableDeclaration {
         identifier: String,
         expression: Expression,
     },
-    ActionDeclaration {
+    ConstantDeclaration {
+        identifier: String,
+        expression: Expression,
+    },
+    FunctionDeclaration {
         identifier: String,
         parameters: Vec<String>,
         statements: Vec<Statement>,
@@ -43,13 +47,24 @@ impl fmt::Display for Statement {
                 ")".blue()
             ),
 
-            Statement::StateDeclaration {
+            Statement::VariableDeclaration {
                 identifier,
                 expression,
             } => write!(
                 formatter,
                 "{}{}, {}{}",
-                "StateDeclaration(".blue(),
+                "VariableDeclaration(".blue(),
+                identifier.italic(),
+                expression.to_string().italic(),
+                ")".blue()
+            ),
+            Statement::ConstantDeclaration {
+                identifier,
+                expression,
+            } => write!(
+                formatter,
+                "{}{}, {}{}",
+                "ConstantDeclaration(".blue(),
                 identifier.italic(),
                 expression.to_string().italic(),
                 ")".blue()
@@ -65,12 +80,12 @@ impl fmt::Display for Statement {
                 iterator.to_string().italic(),
                 ")".blue()
             ),
-            Statement::ActionDeclaration {
+            Statement::FunctionDeclaration {
                 identifier,
                 parameters,
                 statements: _statements,
             } => {
-                write!(formatter, "{}", "ActionDeclaration(".blue())?;
+                write!(formatter, "{}", "FunctionDeclaration(".blue())?;
                 write!(formatter, "{}, ", identifier.italic())?;
 
                 write!(

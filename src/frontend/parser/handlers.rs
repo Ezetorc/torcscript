@@ -22,14 +22,14 @@ impl Parser {
         Ok(Statement::Print { expression })
     }
 
-    pub fn handle_action_declaration(&mut self) -> Result<Statement, LangError> {
+    pub fn handle_function_declaration(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
         let identifier: String = self.parse_identifier("Expected action identifier")?;
         let parameters: Vec<String> = self.parse_parameters_identifiers()?;
         let statements: Vec<Statement> = self.parse_block()?;
 
-        Ok(Statement::ActionDeclaration {
+        Ok(Statement::FunctionDeclaration {
             identifier,
             parameters,
             statements,
@@ -159,7 +159,7 @@ impl Parser {
         self.advance();
     }
 
-    pub fn handle_state_declaration(&mut self) -> Result<Statement, LangError> {
+    pub fn handle_variable_declaration(&mut self) -> Result<Statement, LangError> {
         self.advance();
 
         let identifier: String = self.parse_identifier("Expected state name")?;
@@ -168,7 +168,22 @@ impl Parser {
 
         let expression: Expression = self.parse_expression()?;
 
-        Ok(Statement::StateDeclaration {
+        Ok(Statement::VariableDeclaration {
+            identifier,
+            expression,
+        })
+    }
+
+    pub fn handle_constant_declaration(&mut self) -> Result<Statement, LangError> {
+        self.advance();
+
+        let identifier: String = self.parse_identifier("Expected fact name")?;
+
+        self.advance_expecting(Token::Operator(Operator::Equal))?;
+
+        let expression: Expression = self.parse_expression()?;
+
+        Ok(Statement::ConstantDeclaration {
             identifier,
             expression,
         })
