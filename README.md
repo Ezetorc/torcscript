@@ -136,17 +136,6 @@ cargo build
 
 ---
 
-## 📌 Roadmap
-
-* [ ] Parser improvements
-* [ ] Error handling system
-* [ ] Standard library expansion
-* [ ] REPL support
-* [ ] File execution CLI
-* [ ] Package/module system
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome.
@@ -160,19 +149,4 @@ If you have ideas, improvements, or bug fixes:
 
 ## 📄 License
 
-MIT License © Your Name
-
----
-
-## 💡 Inspiration
-
-TorcScript is inspired by the idea that:
-
-> Programming languages should adapt to humans, not the other way around.
-
-```
-
-If you want, I can also generate:
-- a **logo concept 🎨**
-- a **GitHub repo structure 📁**
-- or a **landing page for TorcScript 🌐**
+MIT License © Ezetorc
