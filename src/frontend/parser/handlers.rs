@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use crate::{
     errors::{lang_error::LangError, parser_error::ParserError},
     frontend::{
-        lexer::token::{keyword::Keyword, operator::Operator, side::Side, token::Token},
         parser::parser::Parser,
+        token::{keyword::Keyword, operator::Operator, side::Side, token::Token},
     },
     runtime::program::{expression::Expression, statement::Statement},
 };

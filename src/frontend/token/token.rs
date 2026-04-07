@@ -2,7 +2,7 @@ use std::fmt;
 
 use colored::Colorize;
 
-use crate::frontend::lexer::token::{
+use crate::frontend::token::{
     constructor::Constructor, keyword::Keyword, literal::Literal, operator::Operator, side::Side,
 };
 

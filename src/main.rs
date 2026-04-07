@@ -1,9 +1,6 @@
 use crate::{
     errors::lang_error::LangError,
-    frontend::{
-        lexer::{lexer::Lexer, token::token::Token},
-        parser::parser::Parser,
-    },
+    frontend::{lexer::lexer::Lexer, parser::parser::Parser, token::token::Token},
     runtime::{interpreter::interpreter::Interpreter, program::program::Program},
     utilities::{print_vector::print_vector, read_file::read_file},
 };

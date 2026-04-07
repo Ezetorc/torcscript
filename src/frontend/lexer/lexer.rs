@@ -1,11 +1,11 @@
 use crate::errors::lang_error::LangError;
 use crate::errors::lexer_error::LexerError;
 
-use crate::frontend::lexer::token::constructor::Constructor;
-use crate::frontend::lexer::token::keyword::Keyword;
-use crate::frontend::lexer::token::literal::Literal;
-use crate::frontend::lexer::token::operator::Operator;
-use crate::frontend::lexer::token::token::Token;
+use crate::frontend::token::constructor::Constructor;
+use crate::frontend::token::keyword::Keyword;
+use crate::frontend::token::literal::Literal;
+use crate::frontend::token::operator::Operator;
+use crate::frontend::token::token::Token;
 use crate::utilities::char_extension::CharExtension;
 
 pub struct Lexer {

@@ -3,7 +3,7 @@ use std::{
     fmt::{self},
 };
 
-use crate::frontend::lexer::token::{literal::Literal, operator::Operator};
+use crate::frontend::token::{literal::Literal, operator::Operator};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expression {

@@ -1,6 +1,6 @@
 use crate::{
-    frontend::lexer::{
-        lexer::Lexer,
+    frontend::{
+        lexer::lexer::Lexer,
         token::{literal::Literal, operator::Operator, side::Side, token::Token},
     },
     utilities::char_extension::CharExtension,
@@ -87,6 +87,7 @@ impl Lexer {
             '*' => Token::Operator(Operator::Multiplication),
             '-' => Token::Operator(Operator::Substraction),
             '+' => Token::Operator(Operator::Addition),
+            '!' => Token::Operator(Operator::Negation),
             '/' => Token::Operator(Operator::Division),
             '>' => Token::Operator(Operator::Greater),
             '=' => Token::Operator(Operator::Equal),

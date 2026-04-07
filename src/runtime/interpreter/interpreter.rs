@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    frontend::lexer::token::literal::Literal,
+    frontend::token::literal::Literal,
     runtime::{
         environment::{environment::Environment, environment_value::EnvironmentValue},
         native::{

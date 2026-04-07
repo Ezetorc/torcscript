@@ -1,6 +1,6 @@
 use crate::{
     errors::{interpreter_error::InterpreterError, lang_error::LangError},
-    frontend::lexer::token::operator::Operator,
+    frontend::token::operator::Operator,
     runtime::value::value::Value,
 };
 
