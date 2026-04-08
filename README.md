@@ -60,12 +60,73 @@ for (fruit) in juan.favourite_fruits {
 
 ## 🧩 Core Concepts
 
+### 📌 Print keywords
+
+Print a value using the `print` keyword
+
+```torc
+print "Hello, how are you?"
+```
+
+Use `print_named` to print an state (variable) or a fact (constant) with its name as a prefix
+
+```torc
+state is_happy = True;
+
+print_named is_happy;
+
+// > is_happy: True
+```
+
+---
+
 ### 📌 State (Variables)
 
 Variables are declared using `state`, emphasizing explicit data definition.
 
 ```torc
 state name = "Zeki";
+```
+
+---
+
+### 📌 Facts (Constants)
+
+Constants are declared using `fact`. They are immutable.
+
+```torc
+fact PI = 314;
+
+PI = "another thing" ❌
+```
+
+---
+
+### ⚙️ Conditionals 
+
+Use the `if` keyword, followed with a condition and a block of code, to define an action that will be executed if the condition is true
+
+```torc
+state im_happy = True;
+
+if im_happy {
+    print "Yes, I'm happy";
+}
+```
+
+Optionally, you can use `else` and `else if` to execute code if the main condition is not true
+
+```torc
+state im_happy = False;
+state im_sad = False;
+
+if im_happy {
+    print "Yes, I'm happy";
+} else if im_sad {
+    print "I'm sad...";
+} else {
+    print "I'm not even happy or sad!";
+}
 ```
 
 ---
@@ -105,33 +166,9 @@ state fruits = List("apple", "banana");
 ### 🔁 Loops
 
 ```torc
-for (item) in fruits {
-    print item;
+for (item, index) in fruits {
+    print index + ": " + item;
 }
-```
-
----
-
-## 🎯 Philosophy
-
-TorcScript is built around:
-
-* **Readability over cleverness**
-* **Explicitness over implicit behavior**
-* **Simplicity over complexity**
-
-It aims to reduce cognitive load and make code feel intuitive.
-
----
-
-## 🛠️ Installation
-
-> *(Add instructions here once available)*
-
-```bash
-git clone https://github.com/your-username/torcscript
-cd torcscript
-cargo build
 ```
 
 ---
